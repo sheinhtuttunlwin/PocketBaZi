@@ -26,6 +26,11 @@ export default function DashboardScreen() {
     [tab]
   );
 
+  const todayLabel = useMemo(
+    () => new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' }),
+    []
+  );
+
   const segmentWidth = useMemo(
     () => `${100 / tabCount}%`,
     [tabCount]
@@ -77,29 +82,31 @@ export default function DashboardScreen() {
               style={[
                 styles.activeLine,
                 {
-                  width: segmentWidth,
-                  left: segmentLeft,
+                  width: segmentWidth as any,
+                  left: segmentLeft as any,
                 },
               ]}
             />
           </View>
         </View>
 
+        <ThemedText style={styles.subheader}>{todayLabel}</ThemedText>
+
         {/* Content */}
         {tab === 'daily' && (
-          <ThemedText style={styles.placeholder}>
-            Your daily insights will appear here.
-          </ThemedText>
+          <View style={styles.contentCard}>
+            <ThemedText style={styles.placeholder}>Your daily insights will appear here.</ThemedText>
+          </View>
         )}
         {tab === 'chart' && (
-          <ThemedText style={styles.placeholder}>
-            Your chart overview will appear here.
-          </ThemedText>
+          <View style={styles.contentCard}>
+            <ThemedText style={styles.placeholder}>Your chart overview will appear here.</ThemedText>
+          </View>
         )}
         {tab === 'journal' && (
-          <ThemedText style={styles.placeholder}>
-            Your journal entries will appear here.
-          </ThemedText>
+          <View style={styles.contentCard}>
+            <ThemedText style={styles.placeholder}>Your journal entries will appear here.</ThemedText>
+          </View>
         )}
       </View>
     </View>
@@ -205,5 +212,18 @@ const styles = StyleSheet.create({
 
   placeholder: {
     opacity: 0.7,
+  },
+  subheader: {
+    color: LINE_LIGHT,
+    fontWeight: '700',
+    marginBottom: -2,
+  },
+  contentCard: {
+    borderWidth: 1.5,
+    borderColor: LINE_LIGHT,
+    borderRadius: 14,
+    padding: 16,
+    height: 480,
+    width: '100%',
   },
 });
