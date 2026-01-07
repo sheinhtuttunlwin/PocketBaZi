@@ -3,6 +3,7 @@ import { Tabs } from 'expo-router';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+const COBALT = '#1e3a8a';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -10,7 +11,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: COBALT,
         tabBarShowLabel: false,
         headerShown: false,
         tabBarStyle: {
