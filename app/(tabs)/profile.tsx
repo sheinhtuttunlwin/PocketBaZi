@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const COBALT = '#1e3a8a';
+const LINE_LIGHT = '#93b5ff';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
@@ -46,7 +47,7 @@ const styles = StyleSheet.create({
   },
   contentCard: {
     borderWidth: 1.5,
-    borderColor: COBALT,
+    borderColor: LINE_LIGHT,
     borderRadius: 14,
     padding: 16,
     height: 480,

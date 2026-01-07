@@ -1,4 +1,5 @@
 import { ThemedText } from '@/components/themed-text';
+import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -18,6 +19,7 @@ const TABS: Array<{ key: TabKey; label: string }> = [
 export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
   const [tab, setTab] = useState<TabKey>('daily');
+  const router = useRouter();
 
   const tabCount = TABS.length;
 
@@ -48,6 +50,7 @@ export default function DashboardScreen() {
         <ThemedText type="title" style={styles.welcome}>
           Welcome
         </ThemedText>
+        {/* FortunFree button removed */}
       </View>
 
       {/* White Sheet */}
@@ -122,6 +125,9 @@ const styles = StyleSheet.create({
   hero: {
     paddingHorizontal: 24,
     paddingBottom: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
   },
 
   welcome: {
@@ -175,6 +181,20 @@ const styles = StyleSheet.create({
   tabLabelActive: {
     color: ACCENT,
     fontWeight: '700',
+  },
+  headerBtn: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 4,
+  },
+  headerBtnText: {
+    fontWeight: '700',
+    color: '#fff',
   },
 
   // Single continuous baseline
