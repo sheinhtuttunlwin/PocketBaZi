@@ -21,6 +21,8 @@ const MAPPING = {
   'calendar': 'calendar-today',
   'clock': 'access-time',
   'person.fill': 'person',
+  'yinyang': 'auto-awesome',
+  'book': 'menu-book',
   'sun.max.fill': 'wb-sunny',
   'moon.fill': 'dark-mode',
   'sparkles': 'auto-awesome',

@@ -1,9 +1,9 @@
 import { Tabs } from 'expo-router';
-import React from 'react';
 
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+const COBALT = '#1e3a8a';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -11,25 +11,46 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: COBALT,
+        tabBarShowLabel: false,
         headerShown: false,
-        tabBarButton: () => null,
-        tabBarStyle: { display: 'none' },
+        tabBarStyle: {
+          borderTopColor: Colors[colorScheme ?? 'light'].border,
+          backgroundColor: Colors[colorScheme ?? 'light'].background,
+          height: 64,
+          paddingTop: 6,
+        },
       }}>
       <Tabs.Screen
-        name="index"
+        name="dashboard"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: 'Dashboard',
+          tabBarShowLabel: false,
+          tabBarIcon: ({ color }) => <FontAwesome5 name="home" size={28} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="insights"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: 'Insights',
+            tabBarIcon: ({ color }) => <FontAwesome5 name="yin-yang" size={28} color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="learn"
+        options={{
+          title: 'Learn',
+          tabBarIcon: ({ color }) => <FontAwesome5 name="book" size={28} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color }) => <FontAwesome5 name="user" size={28} color={color} />,
+        }}
+      />
+      {/* index tab intentionally omitted from footer */}
     </Tabs>
   );
 }
