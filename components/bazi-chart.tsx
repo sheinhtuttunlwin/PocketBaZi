@@ -1,13 +1,23 @@
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import type { Gender as BaziGender, BaziChart as NormalizedChart } from '@/src/features/bazi/types';
 import { StyleSheet } from 'react-native';
 import { ThemedText } from './themed-text';
 import { ThemedView } from './themed-view';
 
+type LegacyPillar = { heavenlyStem?: string; earthlyBranch?: string } | undefined;
+type LegacyChartShape = {
+  yearPillar?: LegacyPillar;
+  monthPillar?: LegacyPillar;
+  dayPillar?: LegacyPillar;
+  hourPillar?: LegacyPillar;
+  dayMaster?: string;
+};
+
 interface BaziChartProps {
-  chartData: any;
+  chartData: NormalizedChart | LegacyChartShape;
   birthDate: Date;
-  gender: 'male' | 'female';
+  gender: BaziGender;
 }
 
 export function BaziChart({ chartData, birthDate, gender }: BaziChartProps) {
@@ -29,7 +39,7 @@ export function BaziChart({ chartData, birthDate, gender }: BaziChartProps) {
     });
   };
 
-  // Extract pillar information safely
+  // Extract pillar information safely for either normalized or legacy chart shapes
   const getDisplay = (val: any) => {
     if (val == null) return 'N/A';
     if (typeof val === 'string' || typeof val === 'number') return String(val);
@@ -41,18 +51,28 @@ export function BaziChart({ chartData, birthDate, gender }: BaziChartProps) {
     return 'N/A';
   };
 
-  const getPillarInfo = (pillar: any) => {
-    if (!pillar) return { heavenly: 'N/A', earthly: 'N/A' };
+  const getPillarInfo = (pillarKey: 'year' | 'month' | 'day' | 'hour') => {
+    if ('mainPillars' in chartData && Array.isArray(chartData.mainPillars)) {
+      const pillar = chartData.mainPillars.find(p => p.pillar === pillarKey);
+      return {
+        heavenly: getDisplay(pillar?.stem),
+        earthly: getDisplay(pillar?.branch),
+      };
+    }
+
+    const legacyPillar = (chartData as LegacyChartShape)?.[`${pillarKey}Pillar` as const];
     return {
-      heavenly: getDisplay(pillar?.heavenlyStem ?? pillar?.stem),
-      earthly: getDisplay(pillar?.earthlyBranch ?? pillar?.branch),
+      heavenly: getDisplay(legacyPillar?.heavenlyStem),
+      earthly: getDisplay(legacyPillar?.earthlyBranch),
     };
   };
 
-  const yearPillar = getPillarInfo(chartData?.yearPillar);
-  const monthPillar = getPillarInfo(chartData?.monthPillar);
-  const dayPillar = getPillarInfo(chartData?.dayPillar);
-  const hourPillar = getPillarInfo(chartData?.hourPillar);
+  const yearPillar = getPillarInfo('year');
+  const monthPillar = getPillarInfo('month');
+  const dayPillar = getPillarInfo('day');
+  const hourPillar = getPillarInfo('hour');
+
+  const dayMasterValue = (chartData as any)?.dayMaster;
 
   return (
     <ThemedView style={[
@@ -70,7 +90,9 @@ export function BaziChart({ chartData, birthDate, gender }: BaziChartProps) {
       <ThemedView style={styles.birthInfo}>
         <ThemedText style={styles.birthText}>📅 {formatDate(birthDate)}</ThemedText>
         <ThemedText style={styles.birthText}>🕐 {formatTime(birthDate)}</ThemedText>
-        <ThemedText style={styles.birthText}>{gender === 'male' ? '♂' : '♀'} {gender.charAt(0).toUpperCase() + gender.slice(1)}</ThemedText>
+        <ThemedText style={styles.birthText}>
+          {gender === 'male' ? '♂' : gender === 'female' ? '♀' : '•'} {gender.charAt(0).toUpperCase() + gender.slice(1)}
+        </ThemedText>
       </ThemedView>
 
       {/* Four Pillars Grid */}
@@ -119,10 +141,10 @@ export function BaziChart({ chartData, birthDate, gender }: BaziChartProps) {
       </ThemedView>
 
       {/* Day Master */}
-      {chartData?.dayMaster && (
+      {dayMasterValue && (
         <ThemedView style={styles.dayMasterContainer}>
           <ThemedText style={styles.dayMasterLabel}>Day Master (Self Element):</ThemedText>
-          <ThemedText style={styles.dayMasterValue}>{chartData.dayMaster}</ThemedText>
+          <ThemedText style={styles.dayMasterValue}>{dayMasterValue}</ThemedText>
         </ThemedView>
       )}
     </ThemedView>
