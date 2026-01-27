@@ -1,10 +1,10 @@
 import { BaziChart } from '@/components/bazi-chart';
 import { ThemedText } from '@/components/themed-text';
-import { runBaziPipeline } from '@/src/features/bazi/pipeline';
 import type { BaziBundle } from '@/src/features/bazi/types';
+import { useBaziBundle } from '@/src/features/bazi/use-bazi-bundle';
 import { profileRepo } from '@/src/features/profile/profile-repo-instance';
-import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
+import { useRouter } from 'expo-router';
+import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -24,10 +24,19 @@ export default function DashboardScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [tab, setTab] = useState<TabKey>('daily');
-  const [bundle, setBundle] = useState<BaziBundle | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [noProfile, setNoProfile] = useState(false);
+
+  // Use the shared BaZi bundle cache/store
+  const { bundle, loading, error, refresh } = useBaziBundle();
+
+  // Check if profile exists on mount
+  useEffect(() => {
+    const checkProfile = async () => {
+      const profile = await profileRepo.getProfile();
+      setNoProfile(!profile);
+    };
+    checkProfile();
+  }, []);
 
   const tabCount = TABS.length;
 
@@ -50,38 +59,6 @@ export default function DashboardScreen() {
     () => `${(100 / tabCount) * activeIndex}%`,
     [tabCount, activeIndex]
   );
-
-  // Load profile and run pipeline when screen comes into focus
-  useFocusEffect(
-    useCallback(() => {
-      loadAndRunPipeline();
-    }, [])
-  );
-
-  const loadAndRunPipeline = useCallback(async () => {
-    setLoading(true);
-    try {
-      const profile = await profileRepo.getProfile();
-      
-      if (!profile) {
-        setNoProfile(true);
-        setBundle(null);
-        setError(null);
-        return;
-      }
-
-      setNoProfile(false);
-      const data = await runBaziPipeline(profile.baziInput);
-      setBundle(data);
-      setError(null);
-    } catch (err) {
-      console.error('BaZi pipeline failed', err);
-      setError('Unable to load BaZi data. Please try again.');
-      setBundle(null);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top + 16 }]}>
