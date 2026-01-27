@@ -1,7 +1,9 @@
+import { BaziChart } from '@/components/bazi-chart';
 import { ThemedText } from '@/components/themed-text';
-import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { runBaziPipeline } from '@/src/features/bazi/pipeline';
+import type { BaziBundle, BaziInput } from '@/src/features/bazi/types';
+import { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const COBALT = '#1e3a8a';
@@ -19,7 +21,9 @@ const TABS: Array<{ key: TabKey; label: string }> = [
 export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
   const [tab, setTab] = useState<TabKey>('daily');
-  const router = useRouter();
+  const [bundle, setBundle] = useState<BaziBundle | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const tabCount = TABS.length;
 
@@ -42,6 +46,36 @@ export default function DashboardScreen() {
     () => `${(100 / tabCount) * activeIndex}%`,
     [tabCount, activeIndex]
   );
+
+  const initialInput = useMemo<BaziInput>(() => ({
+    birthDate: new Date('1997-08-16T10:30:00Z'),
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'UTC',
+    gender: 'male',
+    timeKnown: true,
+  }), []);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    runBaziPipeline(initialInput)
+      .then(data => {
+        if (!active) return;
+        setBundle(data);
+        setError(null);
+      })
+      .catch(err => {
+        console.error('BaZi pipeline failed', err);
+        if (!active) return;
+        setError('Unable to load BaZi data right now. Please try again in a moment.');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [initialInput]);
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top + 16 }]}>
@@ -95,23 +129,105 @@ export default function DashboardScreen() {
 
         <ThemedText style={styles.subheader}>{todayLabel}</ThemedText>
 
-        {/* Content */}
-        {tab === 'daily' && (
-          <View style={styles.contentCard}>
-            <ThemedText style={styles.placeholder}>Your daily insights will appear here.</ThemedText>
-          </View>
-        )}
-        {tab === 'chart' && (
-          <View style={styles.contentCard}>
-            <ThemedText style={styles.placeholder}>Your chart overview will appear here.</ThemedText>
-          </View>
-        )}
-        {tab === 'journal' && (
-          <View style={styles.contentCard}>
-            <ThemedText style={styles.placeholder}>Your journal entries will appear here.</ThemedText>
-          </View>
-        )}
+        <View style={styles.panelArea}>
+          {loading && (
+            <View style={[styles.contentCardFixed, styles.centered]}>
+              <ActivityIndicator color={ACCENT} />
+              <ThemedText style={[styles.placeholder, { marginTop: 12 }]}>Calculating your BaZi...</ThemedText>
+            </View>
+          )}
+
+          {!loading && error && (
+            <View style={[styles.contentCardFixed, styles.centered]}>
+              <ThemedText style={styles.placeholder}>{error}</ThemedText>
+            </View>
+          )}
+
+          {!loading && !error && bundle && (
+            <View style={styles.stack}>
+              {tab === 'daily' && <DailyInsightTab bundle={bundle} />}
+              {tab === 'chart' && <ChartTab bundle={bundle} />}
+              {tab === 'journal' && <JournalTab bundle={bundle} />}
+            </View>
+          )}
+        </View>
       </View>
+    </View>
+  );
+}
+
+function DailyInsightTab({ bundle }: { bundle: BaziBundle }) {
+  const dayMaster = bundle.chart.dayMaster ?? '—';
+
+  return (
+    <View style={styles.contentCardFixed}>
+      <ScrollView
+        style={styles.cardScroll}
+        contentContainerStyle={styles.cardScrollContent}
+        showsVerticalScrollIndicator
+        nestedScrollEnabled
+      >
+        <ThemedText type="subtitle" style={styles.cardTitle}>Today&apos;s Insight</ThemedText>
+        <ThemedText style={styles.meta}>Day Master: {dayMaster}</ThemedText>
+        <ThemedText style={styles.meta}>Timezone: {bundle.input.timezone}</ThemedText>
+
+        <View style={styles.divider} />
+
+        <ThemedText style={styles.bodyText}>
+          {bundle.dailyInsight || 'No daily insight was generated for today.'}
+        </ThemedText>
+      </ScrollView>
+    </View>
+  );
+}
+
+function ChartTab({ bundle }: { bundle: BaziBundle }) {
+  return (
+    <View style={styles.contentCardFixed}>
+      <ScrollView
+        style={styles.cardScroll}
+        contentContainerStyle={styles.cardScrollContent}
+        showsVerticalScrollIndicator
+        nestedScrollEnabled
+      >
+        <BaziChart
+          chartData={bundle.chart}
+          birthDate={bundle.input.birthDate}
+          gender={bundle.input.gender}
+        />
+      </ScrollView>
+    </View>
+  );
+}
+
+function JournalTab({ bundle }: { bundle: BaziBundle }) {
+  const dayMaster = bundle.chart.dayMaster ?? 'your Day Master';
+  const insightSnippet = bundle.dailyInsight?.slice(0, 140) ?? "today's energy";
+
+  const prompts = [
+    `How can your ${dayMaster} quality guide one decision today?`,
+    `What aligns with ${dayMaster} this week and what feels off-balance?`,
+    `Given ${insightSnippet}, what is one action you can take in the next 24 hours?`,
+  ];
+
+  return (
+    <View style={styles.contentCardFixed}>
+      <ScrollView
+        style={styles.cardScroll}
+        contentContainerStyle={styles.cardScrollContent}
+        showsVerticalScrollIndicator
+        nestedScrollEnabled
+      >
+        <ThemedText type="subtitle" style={styles.cardTitle}>Journal</ThemedText>
+        <ThemedText style={styles.meta}>Use these prompts to reflect.</ThemedText>
+        <View style={styles.divider} />
+        {prompts.map((prompt, idx) => (
+          <View key={idx} style={styles.promptRow}>
+            <ThemedText style={styles.promptBullet}>•</ThemedText>
+            <ThemedText style={styles.promptText}>{prompt}</ThemedText>
+          </View>
+        ))}
+      </ScrollView>
     </View>
   );
 }
@@ -243,7 +359,69 @@ const styles = StyleSheet.create({
     borderColor: LINE_LIGHT,
     borderRadius: 14,
     padding: 16,
-    height: 480,
     width: '100%',
+  },
+  contentCardFixed: {
+    borderWidth: 1.5,
+    borderColor: LINE_LIGHT,
+    borderRadius: 14,
+    padding: 0,
+    width: '100%',
+    height: 520,
+    overflow: 'hidden',
+  },
+  cardScroll: {
+    flex: 1,
+  },
+  cardScrollContent: {
+    padding: 16,
+    paddingBottom: 20,
+    gap: 8,
+  },
+  centered: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  panelArea: {
+    flex: 1,
+    paddingTop: 8,
+    paddingBottom: 32,
+    gap: 16,
+  },
+  stack: {
+    gap: 16,
+  },
+  cardTitle: {
+    marginBottom: 4,
+  },
+  meta: {
+    color: '#6b7280',
+    marginTop: 2,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: LINE_LIGHT,
+    marginVertical: 10,
+    opacity: 0.5,
+  },
+  bodyText: {
+    fontSize: 16,
+    lineHeight: 22,
+  },
+  promptRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    marginBottom: 8,
+  },
+  promptBullet: {
+    fontSize: 16,
+    lineHeight: 22,
+    marginTop: 1,
+  },
+  promptText: {
+    flex: 1,
+    fontSize: 16,
+    lineHeight: 22,
   },
 });
