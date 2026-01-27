@@ -142,11 +142,11 @@ export default function ProfileScreen() {
           {/* Action Buttons */}
           <View style={styles.buttonGroup}>
             <TouchableOpacity onPress={handleEdit} style={styles.primaryButton}>
-              <ThemedText style={styles.primaryButtonText}>✏️ Edit Profile</ThemedText>
+              <ThemedText style={styles.primaryButtonText}>Edit Profile</ThemedText>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={handleReset} style={styles.secondaryButton}>
-              <ThemedText style={styles.secondaryButtonText}>🔄 Reset Profile</ThemedText>
+              <ThemedText style={styles.secondaryButtonText}>Reset Profile</ThemedText>
             </TouchableOpacity>
           </View>
         </ScrollView>
