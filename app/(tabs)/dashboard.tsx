@@ -3,8 +3,8 @@ import { ThemedText } from '@/components/themed-text';
 import type { BaziBundle } from '@/src/features/bazi/types';
 import { useBaziBundle } from '@/src/features/bazi/use-bazi-bundle';
 import { profileRepo } from '@/src/features/profile/profile-repo-instance';
-import { useRouter } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -25,18 +25,22 @@ export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
   const [tab, setTab] = useState<TabKey>('daily');
   const [noProfile, setNoProfile] = useState(false);
+  const [profileName, setProfileName] = useState('');
 
   // Use the shared BaZi bundle cache/store
   const { bundle, loading, error, refresh } = useBaziBundle();
 
-  // Check if profile exists on mount
-  useEffect(() => {
-    const checkProfile = async () => {
-      const profile = await profileRepo.getProfile();
-      setNoProfile(!profile);
-    };
-    checkProfile();
-  }, []);
+  // Check if profile exists (and grab name) when screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      const checkProfile = async () => {
+        const profile = await profileRepo.getProfile();
+        setNoProfile(!profile);
+        setProfileName(profile?.name ?? '');
+      };
+      checkProfile();
+    }, [])
+  );
 
   const tabCount = TABS.length;
 
@@ -65,7 +69,7 @@ export default function DashboardScreen() {
       {/* Header */}
       <View style={styles.hero}>
         <ThemedText type="title" style={styles.welcome}>
-          Welcome
+          {profileName ? `Welcome, ${profileName}` : 'Welcome'}
         </ThemedText>
       </View>
 
