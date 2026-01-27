@@ -25,6 +25,7 @@ export default function RootLayout() {
       <WithTheme>
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="profile-setup" options={{ headerShown: false }} />
           <Stack.Screen name="result" options={{ headerShown: false }} />
           <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
         </Stack>

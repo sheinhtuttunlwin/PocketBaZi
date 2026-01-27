@@ -1,8 +1,10 @@
 import { BaziChart } from '@/components/bazi-chart';
 import { ThemedText } from '@/components/themed-text';
 import { runBaziPipeline } from '@/src/features/bazi/pipeline';
-import type { BaziBundle, BaziInput } from '@/src/features/bazi/types';
-import { useEffect, useMemo, useState } from 'react';
+import type { BaziBundle } from '@/src/features/bazi/types';
+import { profileRepo } from '@/src/features/profile/profile-repo-instance';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -19,11 +21,13 @@ const TABS: Array<{ key: TabKey; label: string }> = [
 ];
 
 export default function DashboardScreen() {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const [tab, setTab] = useState<TabKey>('daily');
   const [bundle, setBundle] = useState<BaziBundle | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [noProfile, setNoProfile] = useState(false);
 
   const tabCount = TABS.length;
 
@@ -47,35 +51,37 @@ export default function DashboardScreen() {
     [tabCount, activeIndex]
   );
 
-  const initialInput = useMemo<BaziInput>(() => ({
-    birthDate: new Date('1997-08-16T10:30:00Z'),
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'UTC',
-    gender: 'male',
-    timeKnown: true,
-  }), []);
+  // Load profile and run pipeline when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      loadAndRunPipeline();
+    }, [])
+  );
 
-  useEffect(() => {
-    let active = true;
+  const loadAndRunPipeline = useCallback(async () => {
     setLoading(true);
-    runBaziPipeline(initialInput)
-      .then(data => {
-        if (!active) return;
-        setBundle(data);
+    try {
+      const profile = await profileRepo.getProfile();
+      
+      if (!profile) {
+        setNoProfile(true);
+        setBundle(null);
         setError(null);
-      })
-      .catch(err => {
-        console.error('BaZi pipeline failed', err);
-        if (!active) return;
-        setError('Unable to load BaZi data right now. Please try again in a moment.');
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
+        return;
+      }
 
-    return () => {
-      active = false;
-    };
-  }, [initialInput]);
+      setNoProfile(false);
+      const data = await runBaziPipeline(profile.baziInput);
+      setBundle(data);
+      setError(null);
+    } catch (err) {
+      console.error('BaZi pipeline failed', err);
+      setError('Unable to load BaZi data. Please try again.');
+      setBundle(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top + 16 }]}>
@@ -84,73 +90,93 @@ export default function DashboardScreen() {
         <ThemedText type="title" style={styles.welcome}>
           Welcome
         </ThemedText>
-        {/* FortunFree button removed */}
       </View>
 
       {/* White Sheet */}
       <View style={[styles.sheet, { paddingBottom: insets.bottom + 24 }]}>
-        {/* Tabs */}
-        <View style={styles.tabRow}>
-          {TABS.map(({ key, label }) => {
-            const active = tab === key;
-            return (
-              <TouchableOpacity
-                key={key}
-                accessibilityRole="button"
-                onPress={() => setTab(key)}
-                style={styles.tabBtn}
-                activeOpacity={0.7}
-              >
-                <ThemedText
-                  style={[
-                    styles.tabLabel,
-                    active && styles.tabLabelActive,
-                  ]}
-                >
-                  {label}
-                </ThemedText>
-              </TouchableOpacity>
-            );
-          })}
-
-          {/* Unified underline system */}
-          <View pointerEvents="none" style={styles.lineBar}>
-            <View
-              style={[
-                styles.activeLine,
-                {
-                  width: segmentWidth as any,
-                  left: segmentLeft as any,
-                },
-              ]}
-            />
+        {/* No Profile State */}
+        {noProfile && (
+          <View style={styles.emptyStateContainer}>
+            <ThemedText type="subtitle" style={styles.emptyStateTitle}>No Profile Set Up</ThemedText>
+            <ThemedText style={styles.emptyStateText}>
+              Create your profile to see your BaZi analysis.
+            </ThemedText>
+            <TouchableOpacity
+              onPress={() => router.push('/profile-setup')}
+              style={styles.emptyStateButton}
+            >
+              <ThemedText style={styles.emptyStateButtonText}>Create Profile</ThemedText>
+            </TouchableOpacity>
           </View>
-        </View>
+        )}
 
-        <ThemedText style={styles.subheader}>{todayLabel}</ThemedText>
+        {/* Tabs and Content (only if profile exists) */}
+        {!noProfile && (
+          <>
+            {/* Tabs */}
+            <View style={styles.tabRow}>
+              {TABS.map(({ key, label }) => {
+                const active = tab === key;
+                return (
+                  <TouchableOpacity
+                    key={key}
+                    accessibilityRole="button"
+                    onPress={() => setTab(key)}
+                    style={styles.tabBtn}
+                    activeOpacity={0.7}
+                  >
+                    <ThemedText
+                      style={[
+                        styles.tabLabel,
+                        active && styles.tabLabelActive,
+                      ]}
+                    >
+                      {label}
+                    </ThemedText>
+                  </TouchableOpacity>
+                );
+              })}
 
-        <View style={styles.panelArea}>
-          {loading && (
-            <View style={[styles.contentCardFixed, styles.centered]}>
-              <ActivityIndicator color={ACCENT} />
-              <ThemedText style={[styles.placeholder, { marginTop: 12 }]}>Calculating your BaZi...</ThemedText>
+              {/* Unified underline system */}
+              <View pointerEvents="none" style={styles.lineBar}>
+                <View
+                  style={[
+                    styles.activeLine,
+                    {
+                      width: segmentWidth as any,
+                      left: segmentLeft as any,
+                    },
+                  ]}
+                />
+              </View>
             </View>
-          )}
 
-          {!loading && error && (
-            <View style={[styles.contentCardFixed, styles.centered]}>
-              <ThemedText style={styles.placeholder}>{error}</ThemedText>
-            </View>
-          )}
+            <ThemedText style={styles.subheader}>{todayLabel}</ThemedText>
 
-          {!loading && !error && bundle && (
-            <View style={styles.stack}>
-              {tab === 'daily' && <DailyInsightTab bundle={bundle} />}
-              {tab === 'chart' && <ChartTab bundle={bundle} />}
-              {tab === 'journal' && <JournalTab bundle={bundle} />}
+            <View style={styles.panelArea}>
+              {loading && (
+                <View style={[styles.contentCardFixed, styles.centered]}>
+                  <ActivityIndicator color={ACCENT} />
+                  <ThemedText style={[styles.placeholder, { marginTop: 12 }]}>Calculating your BaZi...</ThemedText>
+                </View>
+              )}
+
+              {!loading && error && (
+                <View style={[styles.contentCardFixed, styles.centered]}>
+                  <ThemedText style={styles.placeholder}>{error}</ThemedText>
+                </View>
+              )}
+
+              {!loading && !error && bundle && (
+                <View style={styles.stack}>
+                  {tab === 'daily' && <DailyInsightTab bundle={bundle} />}
+                  {tab === 'chart' && <ChartTab bundle={bundle} />}
+                  {tab === 'journal' && <JournalTab bundle={bundle} />}
+                </View>
+              )}
             </View>
-          )}
-        </View>
+          </>
+        )}
       </View>
     </View>
   );
@@ -270,6 +296,43 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     shadowOffset: { width: 0, height: -2 },
     elevation: 8,
+  },
+
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 48,
+    gap: 16,
+  },
+
+  emptyStateTitle: {
+    textAlign: 'center',
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#333',
+  },
+
+  emptyStateText: {
+    textAlign: 'center',
+    fontSize: 14,
+    color: '#666',
+    maxWidth: 300,
+  },
+
+  emptyStateButton: {
+    backgroundColor: COBALT,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    marginTop: 12,
+  },
+
+  emptyStateButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 
   tabRow: {
