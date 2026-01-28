@@ -71,6 +71,9 @@ export function BaziChart({ chartData, birthDate, gender }: BaziChartProps) {
   const monthPillar = getPillarInfo('month');
   const dayPillar = getPillarInfo('day');
   const hourPillar = getPillarInfo('hour');
+  
+  // Only show hour pillar if it has valid data
+  const hasHourData = hourPillar.heavenly && hourPillar.earthly;
 
   const dayMasterValue = (chartData as any)?.dayMaster;
 
@@ -101,7 +104,7 @@ export function BaziChart({ chartData, birthDate, gender }: BaziChartProps) {
           <ThemedText style={styles.labelText}>Year</ThemedText>
           <ThemedText style={styles.labelText}>Month</ThemedText>
           <ThemedText style={styles.labelText}>Day</ThemedText>
-          <ThemedText style={styles.labelText}>Hour</ThemedText>
+          {hasHourData && <ThemedText style={styles.labelText}>Hour</ThemedText>}
         </ThemedView>
         
         <ThemedView style={styles.stemRow}>
@@ -114,9 +117,11 @@ export function BaziChart({ chartData, birthDate, gender }: BaziChartProps) {
           <ThemedView style={[styles.pillarCell, styles.stemCell]}>
             <ThemedText style={styles.pillarText}>{dayPillar.heavenly}</ThemedText>
           </ThemedView>
-          <ThemedView style={[styles.pillarCell, styles.stemCell]}>
-            <ThemedText style={styles.pillarText}>{hourPillar.heavenly}</ThemedText>
-          </ThemedView>
+          {hasHourData && (
+            <ThemedView style={[styles.pillarCell, styles.stemCell]}>
+              <ThemedText style={styles.pillarText}>{hourPillar.heavenly}</ThemedText>
+            </ThemedView>
+          )}
         </ThemedView>
         
         <ThemedView style={styles.branchRow}>
@@ -129,9 +134,11 @@ export function BaziChart({ chartData, birthDate, gender }: BaziChartProps) {
           <ThemedView style={[styles.pillarCell, styles.branchCell]}>
             <ThemedText style={styles.pillarText}>{dayPillar.earthly}</ThemedText>
           </ThemedView>
-          <ThemedView style={[styles.pillarCell, styles.branchCell]}>
-            <ThemedText style={styles.pillarText}>{hourPillar.earthly}</ThemedText>
-          </ThemedView>
+          {hasHourData && (
+            <ThemedView style={[styles.pillarCell, styles.branchCell]}>
+              <ThemedText style={styles.pillarText}>{hourPillar.earthly}</ThemedText>
+            </ThemedView>
+          )}
         </ThemedView>
         
         <ThemedView style={styles.rowLabels}>
