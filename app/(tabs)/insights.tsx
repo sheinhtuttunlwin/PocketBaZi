@@ -64,6 +64,7 @@ export default function InsightsScreen() {
         <ThemedText type="title" style={styles.welcome}>
           Insights
         </ThemedText>
+        <ThemedText style={styles.subtitle}>Personal insights based on your chart</ThemedText>
       </View>
 
       <View style={[styles.sheet, { paddingBottom: insets.bottom + 24 }]}>
@@ -135,11 +136,12 @@ export default function InsightsScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: COBALT },
-  hero: { paddingHorizontal: 24, paddingBottom: 12 },
-  welcome: { color: '#fff' },
+  hero: { paddingHorizontal: 24, paddingBottom: 16 },
+  welcome: { color: '#fff', marginBottom: 4 },
+  subtitle: { color: '#93b5ff', fontSize: 15 },
   sheet: {
     position: 'absolute',
-    top: 120,
+    top: 140,
     left: 0,
     right: 0,
     bottom: 0,

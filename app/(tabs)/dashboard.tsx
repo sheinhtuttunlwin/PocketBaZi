@@ -71,6 +71,7 @@ export default function DashboardScreen() {
         <ThemedText type="title" style={styles.welcome}>
           {profileName ? `Welcome, ${profileName}` : 'Welcome'}
         </ThemedText>
+        <ThemedText style={styles.subtitle}>Here’s your energy for today</ThemedText>
       </View>
 
       {/* White Sheet */}
@@ -247,19 +248,25 @@ const styles = StyleSheet.create({
 
   hero: {
     paddingHorizontal: 24,
-    paddingBottom: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
+    paddingBottom: 16,
+    flexDirection: 'column',
+    alignItems: 'flex-start',
     justifyContent: 'flex-start',
   },
 
   welcome: {
     color: '#fff',
+    marginBottom: 4,
+  },
+
+  subtitle: {
+    color: '#93b5ff',
+    fontSize: 15,
   },
 
   sheet: {
     position: 'absolute',
-    top: 120,
+    top: 140,
     left: 0,
     right: 0,
     bottom: 0,

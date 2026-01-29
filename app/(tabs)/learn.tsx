@@ -92,12 +92,12 @@ export default function LearnScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: COBALT },
-  hero: { paddingHorizontal: 24, paddingBottom: 12 },
+  hero: { paddingHorizontal: 24, paddingBottom: 16 },
   welcome: { color: '#fff', marginBottom: 4 },
   subtitle: { color: '#93b5ff', fontSize: 15 },
   sheet: {
     position: 'absolute',
-    top: 120,
+    top: 140,
     left: 0,
     right: 0,
     bottom: 0,
