@@ -67,7 +67,7 @@ export default function InsightsScreen() {
         <ThemedText style={styles.subtitle}>Personal insights based on your chart</ThemedText>
       </View>
 
-      <View style={[styles.sheet, { paddingBottom: insets.bottom + 24 }]}>
+      <View style={styles.sheet}>
         {/* No Profile State */}
         {noProfile && (
           <View style={styles.emptyStateContainer}>

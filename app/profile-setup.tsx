@@ -123,8 +123,9 @@ export default function ProfileSetupScreen() {
           <ThemedText type="title" style={styles.welcome}>
             {isEditing ? 'Edit Profile' : 'Create Profile'}
           </ThemedText>
+          <ThemedText style={styles.subtitle}>Account Setup</ThemedText>
         </View>
-        <View style={[styles.sheet, { paddingBottom: insets.bottom + 24, justifyContent: 'center', alignItems: 'center' }]}>
+        <View style={[styles.sheet, { justifyContent: 'center', alignItems: 'center' }]}>
           <ActivityIndicator size="large" color={COBALT} />
         </View>
       </View>
@@ -137,12 +138,13 @@ export default function ProfileSetupScreen() {
         <ThemedText type="title" style={styles.welcome}>
           {isEditing ? 'Edit Profile' : 'Create Profile'}
         </ThemedText>
+        <ThemedText style={styles.subtitle}>Account Setup</ThemedText>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <ThemedText style={styles.backText}>✕</ThemedText>
         </TouchableOpacity>
       </View>
 
-      <View style={[styles.sheet, { paddingBottom: insets.bottom + 24 }]}>
+      <View style={styles.sheet}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
           {/* Name Field */}
           <View style={styles.fieldGroup}>
@@ -261,8 +263,9 @@ export default function ProfileSetupScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: COBALT },
-  hero: { paddingHorizontal: 24, paddingBottom: 12, position: 'relative' },
-  welcome: { color: '#fff' },
+  hero: { paddingHorizontal: 24, paddingBottom: 16, position: 'relative' },
+  welcome: { color: '#fff', marginBottom: 4 },
+  subtitle: { color: '#93b5ff', fontSize: 15 },
   backBtn: {
     position: 'absolute',
     right: 24,
@@ -282,14 +285,14 @@ const styles = StyleSheet.create({
   },
   sheet: {
     position: 'absolute',
-    top: 120,
+    top: 140,
     left: 0,
     right: 0,
     bottom: 0,
     backgroundColor: '#fff',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
-    paddingTop: 14,
+    paddingTop: 24,
     paddingHorizontal: 24,
     gap: 16,
     shadowColor: '#000',

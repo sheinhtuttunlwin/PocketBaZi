@@ -71,8 +71,9 @@ export default function ProfileScreen() {
       <View style={[styles.screen, { paddingTop: insets.top + 16 }]}>
         <View style={styles.hero}>
           <ThemedText type="title" style={styles.welcome}>Profile</ThemedText>
+          <ThemedText style={styles.subtitle}>Account Settings</ThemedText>
         </View>
-        <View style={[styles.sheet, { paddingBottom: insets.bottom + 24, justifyContent: 'center', alignItems: 'center' }]}>
+        <View style={[styles.sheet, { justifyContent: 'center', alignItems: 'center' }]}>
           <ActivityIndicator size="large" color={COBALT} />
         </View>
       </View>
@@ -84,8 +85,9 @@ export default function ProfileScreen() {
       <View style={[styles.screen, { paddingTop: insets.top + 16 }]}>
         <View style={styles.hero}>
           <ThemedText type="title" style={styles.welcome}>Profile</ThemedText>
+          <ThemedText style={styles.subtitle}>Account Settings</ThemedText>
         </View>
-        <View style={[styles.sheet, { paddingBottom: insets.bottom + 24 }]}>
+        <View style={styles.sheet}>
           <View style={styles.emptyState}>
             <ThemedText style={styles.emptyStateTitle}>No Profile Yet</ThemedText>
             <ThemedText style={styles.emptyStateText}>
@@ -106,9 +108,10 @@ export default function ProfileScreen() {
     <View style={[styles.screen, { paddingTop: insets.top + 16 }]}>
       <View style={styles.hero}>
         <ThemedText type="title" style={styles.welcome}>Profile</ThemedText>
+        <ThemedText style={styles.subtitle}>Account Settings</ThemedText>
       </View>
 
-      <View style={[styles.sheet, { paddingBottom: insets.bottom + 24 }]}>
+      <View style={styles.sheet}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator>
           {/* Profile Display */}
           <View style={styles.displayCard}>
@@ -157,18 +160,19 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: COBALT },
-  hero: { paddingHorizontal: 24, paddingBottom: 12 },
-  welcome: { color: '#fff' },
+  hero: { paddingHorizontal: 24, paddingBottom: 16 },
+  welcome: { color: '#fff', marginBottom: 4 },
+  subtitle: { color: '#93b5ff', fontSize: 15 },
   sheet: {
     position: 'absolute',
-    top: 120,
+    top: 140,
     left: 0,
     right: 0,
     bottom: 0,
     backgroundColor: '#fff',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
-    paddingTop: 14,
+    paddingTop: 24,
     paddingHorizontal: 24,
     gap: 16,
     shadowColor: '#000',

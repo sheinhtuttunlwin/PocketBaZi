@@ -59,7 +59,7 @@ export default function LearnScreen() {
         <ThemedText style={styles.subtitle}>Educational Resources</ThemedText>
       </View>
 
-      <View style={[styles.sheet, { paddingBottom: insets.bottom + 24 }]}>
+      <View style={styles.sheet}>
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}

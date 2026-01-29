@@ -75,7 +75,7 @@ export default function DashboardScreen() {
       </View>
 
       {/* White Sheet */}
-      <View style={[styles.sheet, { paddingBottom: insets.bottom + 24 }]}>
+      <View style={styles.sheet}>
         {/* No Profile State */}
         {noProfile && (
           <View style={styles.emptyStateContainer}>
@@ -275,9 +275,9 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 28,
 
     // tighter spacing near top
-    paddingTop: 14,
+    paddingTop: 11,
     paddingHorizontal: 24,
-    gap: 16,
+    gap: 13,
 
     shadowColor: '#000',
     shadowOpacity: 0.08,
@@ -329,8 +329,8 @@ const styles = StyleSheet.create({
     marginHorizontal: -24,
     paddingHorizontal: 24,
 
-    paddingTop: 2,
-    paddingBottom: 10,
+    paddingTop: 0,
+    paddingBottom: 9,
   },
 
   tabBtn: {
@@ -403,7 +403,7 @@ const styles = StyleSheet.create({
   subheader: {
     color: LINE_LIGHT,
     fontWeight: '700',
-    marginBottom: -2,
+    marginBottom: -4,
   },
   contentCard: {
     borderWidth: 1.5,
@@ -435,9 +435,9 @@ const styles = StyleSheet.create({
   },
   panelArea: {
     flex: 1,
-    paddingTop: 8,
-    paddingBottom: 32,
-    gap: 16,
+    paddingTop: 0,
+    paddingBottom: 16,
+    gap: 14,
   },
   stack: {
     gap: 16,
