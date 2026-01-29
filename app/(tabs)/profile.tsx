@@ -140,6 +140,19 @@ export default function ProfileScreen() {
                 {profile.baziInput.timeKnown ? 'Yes' : 'No'}
               </ThemedText>
             </View>
+
+            {profile.baziInput.timeKnown && profile.baziInput.birthTime && (
+              <View style={styles.infoRow}>
+                <ThemedText style={styles.infoLabel}>Birth Time</ThemedText>
+                <ThemedText style={styles.infoValue}>
+                  {new Date(profile.baziInput.birthTime).toLocaleTimeString(undefined, { 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    hour12: true 
+                  })}
+                </ThemedText>
+              </View>
+            )}
           </View>
 
           {/* Action Buttons */}
