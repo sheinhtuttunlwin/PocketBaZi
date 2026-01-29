@@ -1,4 +1,5 @@
 import { ThemedText } from '@/components/themed-text';
+import { baziStore } from '@/src/features/bazi/bazi-store';
 import { profileRepo } from '@/src/features/profile/profile-repo-instance';
 import type { Profile } from '@/src/features/profile/types';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -54,6 +55,8 @@ export default function ProfileScreen() {
         onPress: async () => {
           try {
             await profileRepo.clearProfile();
+            // Clear the BaZi cache as well
+            await baziStore.load();
             setProfile(null);
             router.replace('/profile-setup');
           } catch (error) {
@@ -145,11 +148,15 @@ export default function ProfileScreen() {
               <View style={styles.infoRow}>
                 <ThemedText style={styles.infoLabel}>Birth Time</ThemedText>
                 <ThemedText style={styles.infoValue}>
-                  {new Date(profile.baziInput.birthTime).toLocaleTimeString(undefined, { 
-                    hour: '2-digit', 
-                    minute: '2-digit', 
-                    hour12: true 
-                  })}
+                  {(() => {
+                    const time = profile.baziInput.birthTime;
+                    const timeObj = typeof time === 'string' ? new Date(time) : time;
+                    return timeObj.toLocaleTimeString(undefined, { 
+                      hour: '2-digit', 
+                      minute: '2-digit', 
+                      hour12: true 
+                    });
+                  })()}
                 </ThemedText>
               </View>
             )}
