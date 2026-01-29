@@ -29,6 +29,10 @@ export default function RootLayout() {
           <Stack.Screen name="insight-overview" options={{ headerShown: false }} />
           <Stack.Screen name="insight-patterns" options={{ headerShown: false }} />
           <Stack.Screen name="insight-guidance" options={{ headerShown: false }} />
+          <Stack.Screen name="learn-what-is-bazi" options={{ headerShown: false }} />
+          <Stack.Screen name="learn-day-master" options={{ headerShown: false }} />
+          <Stack.Screen name="learn-five-elements" options={{ headerShown: false }} />
+          <Stack.Screen name="learn-stems-branches" options={{ headerShown: false }} />
         </Stack>
       </WithTheme>
     </ThemeControllerProvider>
