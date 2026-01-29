@@ -139,6 +139,7 @@ const styles = StyleSheet.create({
   },
   cardIcon: {
     fontSize: 32,
+    lineHeight: 40,
   },
   cardTitle: {
     fontSize: 18,
