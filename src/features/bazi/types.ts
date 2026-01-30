@@ -7,6 +7,7 @@ export type BaziInput = {
   timezone: string;
   gender: Gender;
   timeKnown: boolean;
+  birthTime?: Date; // Optional birth time (used when timeKnown is true)
 };
 
 export type BaziPillar = {

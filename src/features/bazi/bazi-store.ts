@@ -17,7 +17,8 @@ import type { BaziBundle, BaziInput } from './types';
 
 /** Derive a cache key from BaziInput */
 function getChartKey(input: BaziInput): string {
-  return `${input.birthDate.toISOString()}|${input.timezone}|${input.gender}|${input.timeKnown}`;
+  const timeStr = input.birthTime ? input.birthTime.toISOString() : 'no-time';
+  return `${input.birthDate.toISOString()}|${input.timezone}|${input.gender}|${input.timeKnown}|${timeStr}`;
 }
 
 /** Get today's date key (YYYY-MM-DD) */

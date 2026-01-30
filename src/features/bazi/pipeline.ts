@@ -9,6 +9,19 @@ export async function runBaziPipeline(input: BaziInput): Promise<BaziBundle> {
   const analysis = await calculateRawAnalysis(input);
   const chart = normalizeAnalysisToChart(analysis, input);
 
+  // Create a combined date for display if birthTime exists
+  let displayInput = input;
+  if (input.timeKnown && input.birthTime) {
+    const combinedDate = new Date(input.birthDate);
+    combinedDate.setHours(
+      input.birthTime.getHours(),
+      input.birthTime.getMinutes(),
+      0,
+      0
+    );
+    displayInput = { ...input, birthDate: combinedDate };
+  }
+
   let interpretation: string | undefined;
   let dailyInsight: string | undefined;
 
@@ -25,5 +38,5 @@ export async function runBaziPipeline(input: BaziInput): Promise<BaziBundle> {
     console.log('DeepSeek getDailyInsight failed:', e);
   }
 
-  return { input, chart, interpretation, dailyInsight };
+  return { input: displayInput, chart, interpretation, dailyInsight };
 }

@@ -1,5 +1,5 @@
 import { ThemedText } from '@/components/themed-text';
-import type { Gender } from '@/src/features/bazi/types';
+import type { BaziInput, Gender } from '@/src/features/bazi/types';
 import { profileRepo } from '@/src/features/profile/profile-repo-instance';
 import type { Profile } from '@/src/features/profile/types';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -40,6 +40,7 @@ export default function ProfileSetupScreen() {
   // Form state
   const [name, setName] = useState('');
   const [birthDate, setBirthDate] = useState(new Date());
+  const [birthTime, setBirthTime] = useState(new Date());
   const [timezone, setTimezone] = useState(deviceTz);
   const [gender, setGender] = useState<Gender>('male');
   const [timeKnown, setTimeKnown] = useState(false);
@@ -48,6 +49,7 @@ export default function ProfileSetupScreen() {
   // UI state
   const [loading, setLoading] = useState(true);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -62,6 +64,9 @@ export default function ProfileSetupScreen() {
           setTimezone(profile.baziInput.timezone);
           setGender(profile.baziInput.gender);
           setTimeKnown(profile.baziInput.timeKnown);
+          if (profile.baziInput.birthTime) {
+            setBirthTime(profile.baziInput.birthTime);
+          }
           setIsEditing(true);
         }
       } catch (error) {
@@ -85,14 +90,21 @@ export default function ProfileSetupScreen() {
     setSaving(true);
 
     try {
+      const baziInput: BaziInput = {
+        birthDate,
+        timezone,
+        gender,
+        timeKnown,
+      };
+      
+      // Include birthTime if timeKnown is true
+      if (timeKnown) {
+        baziInput.birthTime = birthTime;
+      }
+
       const profile: Profile = {
         name: trimmedName,
-        baziInput: {
-          birthDate,
-          timezone,
-          gender,
-          timeKnown,
-        },
+        baziInput,
       };
       await profileRepo.saveProfile(profile);
       Alert.alert('Success', 'Profile saved successfully!', [
@@ -106,13 +118,21 @@ export default function ProfileSetupScreen() {
       Alert.alert('Error', 'Failed to save profile. Please try again.');
       setSaving(false);
     }
-  }, [name, birthDate, timezone, gender, timeKnown, router]);
+  }, [name, birthDate, birthTime, timezone, gender, timeKnown, router]);
 
   // Date picker handler
   const handleDateChange = (_event: any, selectedDate?: Date) => {
     setShowDatePicker(false);
     if (selectedDate) {
       setBirthDate(selectedDate);
+    }
+  };
+
+  // Time picker handler
+  const handleTimeChange = (_event: any, selectedTime?: Date) => {
+    setShowTimePicker(false);
+    if (selectedTime) {
+      setBirthTime(selectedTime);
     }
   };
 
@@ -123,8 +143,9 @@ export default function ProfileSetupScreen() {
           <ThemedText type="title" style={styles.welcome}>
             {isEditing ? 'Edit Profile' : 'Create Profile'}
           </ThemedText>
+          <ThemedText style={styles.subtitle}>Account Setup</ThemedText>
         </View>
-        <View style={[styles.sheet, { paddingBottom: insets.bottom + 24, justifyContent: 'center', alignItems: 'center' }]}>
+        <View style={[styles.sheet, { justifyContent: 'center', alignItems: 'center' }]}>
           <ActivityIndicator size="large" color={COBALT} />
         </View>
       </View>
@@ -137,12 +158,13 @@ export default function ProfileSetupScreen() {
         <ThemedText type="title" style={styles.welcome}>
           {isEditing ? 'Edit Profile' : 'Create Profile'}
         </ThemedText>
+        <ThemedText style={styles.subtitle}>Account Setup</ThemedText>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <ThemedText style={styles.backText}>✕</ThemedText>
         </TouchableOpacity>
       </View>
 
-      <View style={[styles.sheet, { paddingBottom: insets.bottom + 24 }]}>
+      <View style={styles.sheet}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
           {/* Name Field */}
           <View style={styles.fieldGroup}>
@@ -201,7 +223,7 @@ export default function ProfileSetupScreen() {
           <View style={styles.fieldGroup}>
             <ThemedText style={styles.label}>Gender</ThemedText>
             <View style={styles.genderButtons}>
-              {(['male', 'female', 'other'] as Gender[]).map((g) => (
+              {(['male', 'female'] as Gender[]).map((g) => (
                 <TouchableOpacity
                   key={g}
                   onPress={() => setGender(g)}
@@ -227,6 +249,31 @@ export default function ProfileSetupScreen() {
               <ThemedText style={styles.toggleText}>{timeKnown ? 'Yes' : 'No'}</ThemedText>
             </TouchableOpacity>
           </View>
+
+          {/* Birth Time Field (shown only when timeKnown is true) */}
+          {timeKnown && (
+            <View style={styles.fieldGroup}>
+              <ThemedText style={styles.label}>Birth Time</ThemedText>
+              <TouchableOpacity
+                onPress={() => setShowTimePicker(true)}
+                disabled={saving}
+                style={styles.dateButton}
+              >
+                <ThemedText>
+                  {birthTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: true })}
+                </ThemedText>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {showTimePicker && (
+            <DateTimePicker
+              value={birthTime}
+              mode="time"
+              display="spinner"
+              onChange={handleTimeChange}
+            />
+          )}
 
           {/* Save Button */}
           <View style={styles.buttonGroup}>
@@ -261,8 +308,9 @@ export default function ProfileSetupScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: COBALT },
-  hero: { paddingHorizontal: 24, paddingBottom: 12, position: 'relative' },
-  welcome: { color: '#fff' },
+  hero: { paddingHorizontal: 24, paddingBottom: 16, position: 'relative' },
+  welcome: { color: '#fff', marginBottom: 4 },
+  subtitle: { color: '#93b5ff', fontSize: 15 },
   backBtn: {
     position: 'absolute',
     right: 24,
@@ -282,14 +330,14 @@ const styles = StyleSheet.create({
   },
   sheet: {
     position: 'absolute',
-    top: 120,
+    top: 140,
     left: 0,
     right: 0,
     bottom: 0,
     backgroundColor: '#fff',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
-    paddingTop: 14,
+    paddingTop: 24,
     paddingHorizontal: 24,
     gap: 16,
     shadowColor: '#000',

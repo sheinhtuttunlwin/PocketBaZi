@@ -71,10 +71,11 @@ export default function DashboardScreen() {
         <ThemedText type="title" style={styles.welcome}>
           {profileName ? `Welcome, ${profileName}` : 'Welcome'}
         </ThemedText>
+        <ThemedText style={styles.subtitle}>Here’s your energy for today</ThemedText>
       </View>
 
       {/* White Sheet */}
-      <View style={[styles.sheet, { paddingBottom: insets.bottom + 24 }]}>
+      <View style={styles.sheet}>
         {/* No Profile State */}
         {noProfile && (
           <View style={styles.emptyStateContainer}>
@@ -247,19 +248,25 @@ const styles = StyleSheet.create({
 
   hero: {
     paddingHorizontal: 24,
-    paddingBottom: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
+    paddingBottom: 16,
+    flexDirection: 'column',
+    alignItems: 'flex-start',
     justifyContent: 'flex-start',
   },
 
   welcome: {
     color: '#fff',
+    marginBottom: 4,
+  },
+
+  subtitle: {
+    color: '#93b5ff',
+    fontSize: 15,
   },
 
   sheet: {
     position: 'absolute',
-    top: 120,
+    top: 140,
     left: 0,
     right: 0,
     bottom: 0,
@@ -268,9 +275,9 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 28,
 
     // tighter spacing near top
-    paddingTop: 14,
+    paddingTop: 11,
     paddingHorizontal: 24,
-    gap: 16,
+    gap: 13,
 
     shadowColor: '#000',
     shadowOpacity: 0.08,
@@ -322,8 +329,8 @@ const styles = StyleSheet.create({
     marginHorizontal: -24,
     paddingHorizontal: 24,
 
-    paddingTop: 2,
-    paddingBottom: 10,
+    paddingTop: 0,
+    paddingBottom: 9,
   },
 
   tabBtn: {
@@ -396,7 +403,7 @@ const styles = StyleSheet.create({
   subheader: {
     color: LINE_LIGHT,
     fontWeight: '700',
-    marginBottom: -2,
+    marginBottom: -4,
   },
   contentCard: {
     borderWidth: 1.5,
@@ -428,9 +435,9 @@ const styles = StyleSheet.create({
   },
   panelArea: {
     flex: 1,
-    paddingTop: 8,
-    paddingBottom: 32,
-    gap: 16,
+    paddingTop: 0,
+    paddingBottom: 16,
+    gap: 14,
   },
   stack: {
     gap: 16,

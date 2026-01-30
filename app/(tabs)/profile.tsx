@@ -1,4 +1,5 @@
 import { ThemedText } from '@/components/themed-text';
+import { baziStore } from '@/src/features/bazi/bazi-store';
 import { profileRepo } from '@/src/features/profile/profile-repo-instance';
 import type { Profile } from '@/src/features/profile/types';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -54,6 +55,8 @@ export default function ProfileScreen() {
         onPress: async () => {
           try {
             await profileRepo.clearProfile();
+            // Clear the BaZi cache as well
+            await baziStore.load();
             setProfile(null);
             router.replace('/profile-setup');
           } catch (error) {
@@ -71,8 +74,9 @@ export default function ProfileScreen() {
       <View style={[styles.screen, { paddingTop: insets.top + 16 }]}>
         <View style={styles.hero}>
           <ThemedText type="title" style={styles.welcome}>Profile</ThemedText>
+          <ThemedText style={styles.subtitle}>Account Settings</ThemedText>
         </View>
-        <View style={[styles.sheet, { paddingBottom: insets.bottom + 24, justifyContent: 'center', alignItems: 'center' }]}>
+        <View style={[styles.sheet, { justifyContent: 'center', alignItems: 'center' }]}>
           <ActivityIndicator size="large" color={COBALT} />
         </View>
       </View>
@@ -84,8 +88,9 @@ export default function ProfileScreen() {
       <View style={[styles.screen, { paddingTop: insets.top + 16 }]}>
         <View style={styles.hero}>
           <ThemedText type="title" style={styles.welcome}>Profile</ThemedText>
+          <ThemedText style={styles.subtitle}>Account Settings</ThemedText>
         </View>
-        <View style={[styles.sheet, { paddingBottom: insets.bottom + 24 }]}>
+        <View style={styles.sheet}>
           <View style={styles.emptyState}>
             <ThemedText style={styles.emptyStateTitle}>No Profile Yet</ThemedText>
             <ThemedText style={styles.emptyStateText}>
@@ -106,9 +111,10 @@ export default function ProfileScreen() {
     <View style={[styles.screen, { paddingTop: insets.top + 16 }]}>
       <View style={styles.hero}>
         <ThemedText type="title" style={styles.welcome}>Profile</ThemedText>
+        <ThemedText style={styles.subtitle}>Account Settings</ThemedText>
       </View>
 
-      <View style={[styles.sheet, { paddingBottom: insets.bottom + 24 }]}>
+      <View style={styles.sheet}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator>
           {/* Profile Display */}
           <View style={styles.displayCard}>
@@ -137,6 +143,23 @@ export default function ProfileScreen() {
                 {profile.baziInput.timeKnown ? 'Yes' : 'No'}
               </ThemedText>
             </View>
+
+            {profile.baziInput.timeKnown && profile.baziInput.birthTime && (
+              <View style={styles.infoRow}>
+                <ThemedText style={styles.infoLabel}>Birth Time</ThemedText>
+                <ThemedText style={styles.infoValue}>
+                  {(() => {
+                    const time = profile.baziInput.birthTime;
+                    const timeObj = typeof time === 'string' ? new Date(time) : time;
+                    return timeObj.toLocaleTimeString(undefined, { 
+                      hour: '2-digit', 
+                      minute: '2-digit', 
+                      hour12: true 
+                    });
+                  })()}
+                </ThemedText>
+              </View>
+            )}
           </View>
 
           {/* Action Buttons */}
@@ -157,18 +180,19 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: COBALT },
-  hero: { paddingHorizontal: 24, paddingBottom: 12 },
-  welcome: { color: '#fff' },
+  hero: { paddingHorizontal: 24, paddingBottom: 16 },
+  welcome: { color: '#fff', marginBottom: 4 },
+  subtitle: { color: '#93b5ff', fontSize: 15 },
   sheet: {
     position: 'absolute',
-    top: 120,
+    top: 140,
     left: 0,
     right: 0,
     bottom: 0,
     backgroundColor: '#fff',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
-    paddingTop: 14,
+    paddingTop: 24,
     paddingHorizontal: 24,
     gap: 16,
     shadowColor: '#000',

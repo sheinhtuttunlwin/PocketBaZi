@@ -17,6 +17,7 @@ type SerializedProfile = {
     timezone: string;
     gender: string;
     timeKnown: boolean;
+    birthTime?: string; // ISO string (optional)
   };
 };
 
@@ -40,6 +41,7 @@ class LocalProfileRepo implements ProfileRepo {
           timezone: serialized.baziInput.timezone,
           gender: serialized.baziInput.gender as 'male' | 'female' | 'other',
           timeKnown: serialized.baziInput.timeKnown,
+          birthTime: serialized.baziInput.birthTime ? new Date(serialized.baziInput.birthTime) : undefined,
         },
       };
 
@@ -60,6 +62,7 @@ class LocalProfileRepo implements ProfileRepo {
           timezone: profile.baziInput.timezone,
           gender: profile.baziInput.gender,
           timeKnown: profile.baziInput.timeKnown,
+          birthTime: profile.baziInput.birthTime ? profile.baziInput.birthTime.toISOString() : undefined,
         },
       };
 
