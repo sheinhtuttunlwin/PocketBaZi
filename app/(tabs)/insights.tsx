@@ -148,8 +148,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
-    paddingTop: 24,
-    paddingHorizontal: 24,
+    paddingTop: 0,
+    paddingHorizontal: 0,
     shadowColor: '#000',
     shadowOpacity: 0.08,
     shadowRadius: 12,
@@ -207,9 +207,14 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+    overflow: 'hidden',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
   },
   scrollContent: {
     gap: 16,
+    paddingTop: 24,
+    paddingHorizontal: 24,
     paddingBottom: 16,
   },
   insightCard: {
