@@ -6,13 +6,13 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    ScrollView,
+    StyleSheet,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -337,8 +337,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
-    paddingTop: 24,
-    paddingHorizontal: 24,
+    paddingTop: 0,
+    paddingHorizontal: 0,
+    overflow: 'hidden',
     gap: 16,
     shadowColor: '#000',
     shadowOpacity: 0.08,
@@ -347,6 +348,8 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   scrollContent: {
+    paddingTop: 24,
+    paddingHorizontal: 24,
     paddingVertical: 12,
     gap: 16,
   },
