@@ -139,7 +139,7 @@ export default function DashboardScreen() {
             </View>
 
             <View style={styles.panelArea}>
-              {loading && (
+              {loading && tab !== 'journal' && (
                 <View style={[styles.contentCardFixed, styles.centered]}>
                   <ActivityIndicator color={ACCENT} />
                   <ThemedText style={[styles.placeholder, { marginTop: 12 }]}>Calculating your BaZi...</ThemedText>
@@ -156,8 +156,11 @@ export default function DashboardScreen() {
                 <View style={styles.stack}>
                   {tab === 'daily' && <DailyInsightTab bundle={bundle} />}
                   {tab === 'chart' && <ChartTab bundle={bundle} />}
-                  {tab === 'journal' && <JournalTab bundle={bundle} />}
                 </View>
+              )}
+              
+              {tab === 'journal' && (
+                <JournalTab bundle={bundle} isLoadingBazi={loading} />
               )}
             </View>
           </>
@@ -211,11 +214,11 @@ function ChartTab({ bundle }: { bundle: BaziBundle }) {
   );
 }
 
-function JournalTab({ bundle }: { bundle: BaziBundle }) {
+function JournalTab({ bundle, isLoadingBazi = false }: { bundle: BaziBundle | null; isLoadingBazi?: boolean }) {
   const router = useRouter();
-  const dayMaster = bundle.chart.dayMaster ?? 'your Day Master';
-  const insightSnippet = bundle.dailyInsight?.slice(0, 140) ?? "today's energy";
-  const { text, setText, loading, dateKey } = useJournal();
+  const dayMaster = bundle?.chart.dayMaster ?? 'your Day Master';
+  const insightSnippet = bundle?.dailyInsight?.slice(0, 140) ?? "today's energy";
+  const { text, setText, loading: journalLoading, dateKey } = useJournal();
 
   const prompts = [
     `How can your ${dayMaster} quality guide one decision today?`,
@@ -229,19 +232,26 @@ function JournalTab({ bundle }: { bundle: BaziBundle }) {
         {/* Reflection Prompts Card */}
         <View style={styles.journalCard}>
           <ThemedText type="defaultSemiBold" style={styles.journalCardTitle}>Reflection Prompts</ThemedText>
-          <ScrollView
-            style={styles.journalCardScroll}
-            contentContainerStyle={styles.journalCardContent}
-            showsVerticalScrollIndicator
-            nestedScrollEnabled
-          >
-            {prompts.map((prompt, idx) => (
-              <View key={idx} style={styles.promptRow}>
-                <ThemedText style={styles.promptBullet}>•</ThemedText>
-                <ThemedText style={styles.promptText}>{prompt}</ThemedText>
-              </View>
-            ))}
-          </ScrollView>
+          {isLoadingBazi ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={COBALT} />
+              <ThemedText style={styles.loadingIndicatorText}>Calculating your BaZi...</ThemedText>
+            </View>
+          ) : (
+            <ScrollView
+              style={styles.journalCardScroll}
+              contentContainerStyle={styles.journalCardContent}
+              showsVerticalScrollIndicator
+              nestedScrollEnabled
+            >
+              {prompts.map((prompt, idx) => (
+                <View key={idx} style={styles.promptRow}>
+                  <ThemedText style={styles.promptBullet}>•</ThemedText>
+                  <ThemedText style={styles.promptText}>{prompt}</ThemedText>
+                </View>
+              ))}
+            </ScrollView>
+          )}
         </View>
 
         {/* Journal Entry Card */}
@@ -255,7 +265,7 @@ function JournalTab({ bundle }: { bundle: BaziBundle }) {
               <ThemedText style={styles.historyLinkText}>History</ThemedText>
             </TouchableOpacity>
           </View>
-          {loading ? (
+          {journalLoading ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color={COBALT} />
             </View>
@@ -267,7 +277,7 @@ function JournalTab({ bundle }: { bundle: BaziBundle }) {
               multiline
               value={text}
               onChangeText={setText}
-              editable={!loading}
+              editable={!journalLoading}
             />
           )}
         </View>
@@ -584,6 +594,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    gap: 12,
+  },
+  loadingIndicatorText: {
+    color: '#666',
+    fontSize: 14,
   },
   journalInput: {
     flex: 1,
