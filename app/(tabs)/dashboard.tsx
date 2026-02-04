@@ -2,8 +2,8 @@ import { BaziChart } from '@/components/bazi-chart';
 import { ThemedText } from '@/components/themed-text';
 import type { BaziBundle } from '@/src/features/bazi/types';
 import { useBaziBundle } from '@/src/features/bazi/use-bazi-bundle';
-import { profileRepo } from '@/src/features/profile/profile-repo-instance';
 import { useJournal } from '@/src/features/journal/use-journal';
+import { profileRepo } from '@/src/features/profile/profile-repo-instance';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
@@ -134,7 +134,9 @@ export default function DashboardScreen() {
               </View>
             </View>
 
-            <ThemedText style={styles.subheader}>{todayLabel}</ThemedText>
+            <View style={styles.dateRow}>
+              <ThemedText style={styles.subheader}>{todayLabel}</ThemedText>
+            </View>
 
             <View style={styles.panelArea}>
               {loading && (
@@ -210,6 +212,7 @@ function ChartTab({ bundle }: { bundle: BaziBundle }) {
 }
 
 function JournalTab({ bundle }: { bundle: BaziBundle }) {
+  const router = useRouter();
   const dayMaster = bundle.chart.dayMaster ?? 'your Day Master';
   const insightSnippet = bundle.dailyInsight?.slice(0, 140) ?? "today's energy";
   const { text, setText, loading, dateKey } = useJournal();
@@ -221,43 +224,54 @@ function JournalTab({ bundle }: { bundle: BaziBundle }) {
   ];
 
   return (
-    <View style={styles.contentCardFixed}>
-      <ScrollView
-        style={styles.cardScroll}
-        contentContainerStyle={styles.cardScrollContent}
-        showsVerticalScrollIndicator
-        nestedScrollEnabled
-      >
-        <ThemedText type="subtitle" style={styles.cardTitle}>Journal</ThemedText>
-        <ThemedText style={styles.meta}>Date: {dateKey}</ThemedText>
+    <View style={styles.journalWrapper}>
+      <View style={styles.journalContainer}>
+        {/* Reflection Prompts Card */}
+        <View style={styles.journalCard}>
+          <ThemedText type="defaultSemiBold" style={styles.journalCardTitle}>Reflection Prompts</ThemedText>
+          <ScrollView
+            style={styles.journalCardScroll}
+            contentContainerStyle={styles.journalCardContent}
+            showsVerticalScrollIndicator
+            nestedScrollEnabled
+          >
+            {prompts.map((prompt, idx) => (
+              <View key={idx} style={styles.promptRow}>
+                <ThemedText style={styles.promptBullet}>•</ThemedText>
+                <ThemedText style={styles.promptText}>{prompt}</ThemedText>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
 
-        {/* Prompts Section */}
-        <ThemedText style={styles.promptsLabel}>Reflection Prompts</ThemedText>
-        <View style={styles.divider} />
-        {prompts.map((prompt, idx) => (
-          <View key={idx} style={styles.promptRow}>
-            <ThemedText style={styles.promptBullet}>•</ThemedText>
-            <ThemedText style={styles.promptText}>{prompt}</ThemedText>
+        {/* Journal Entry Card */}
+        <View style={styles.journalCard}>
+          <View style={styles.entryCardHeader}>
+            <ThemedText type="defaultSemiBold" style={styles.entryCardTitle}>Your Entry</ThemedText>
+            <TouchableOpacity
+              onPress={() => router.push('/journal-history')}
+              style={styles.historyLink}
+            >
+              <ThemedText style={styles.historyLinkText}>History</ThemedText>
+            </TouchableOpacity>
           </View>
-        ))}
-
-        {/* Journal Entry Section */}
-        <ThemedText style={[styles.promptsLabel, { marginTop: 24 }]}>Your Entry</ThemedText>
-        <View style={styles.divider} />
-        {loading ? (
-          <ActivityIndicator size="large" color={COBALT} style={styles.loadingIndicator} />
-        ) : (
-          <TextInput
-            style={styles.journalInput}
-            placeholder="Write your thoughts here..."
-            placeholderTextColor="#999"
-            multiline
-            value={text}
-            onChangeText={setText}
-            editable={!loading}
-          />
-        )}
-      </ScrollView>
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={COBALT} />
+            </View>
+          ) : (
+            <TextInput
+              style={styles.journalInput}
+              placeholder="Write your thoughts here..."
+              placeholderTextColor="#999"
+              multiline
+              value={text}
+              onChangeText={setText}
+              editable={!loading}
+            />
+          )}
+        </View>
+      </View>
     </View>
   );
 }
@@ -422,10 +436,15 @@ const styles = StyleSheet.create({
   placeholder: {
     opacity: 0.7,
   },
+  dateRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: -4,
+  },
   subheader: {
     color: LINE_LIGHT,
     fontWeight: '700',
-    marginBottom: -4,
   },
   contentCard: {
     borderWidth: 1.5,
@@ -439,6 +458,11 @@ const styles = StyleSheet.create({
     borderColor: LINE_LIGHT,
     borderRadius: 14,
     padding: 0,
+    width: '100%',
+    height: 520,
+    overflow: 'hidden',
+  },
+  journalWrapper: {
     width: '100%',
     height: 520,
     overflow: 'hidden',
@@ -504,19 +528,71 @@ const styles = StyleSheet.create({
     marginTop: 12,
     marginBottom: 4,
   },
-  journalInput: {
+  historyLink: {
+    paddingVertical: 3,
+    paddingHorizontal: 10,
+    backgroundColor: LINE_LIGHT,
+    borderRadius: 6,
+  },
+  historyLinkText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: COBALT,
+  },
+  journalContainer: {
+    flex: 1,
+    gap: 12,
+  },
+  journalCard: {
+    flex: 1,
     borderWidth: 1.5,
     borderColor: LINE_LIGHT,
-    borderRadius: 12,
-    paddingHorizontal: 12,
+    borderRadius: 14,
+    overflow: 'hidden',
+    backgroundColor: '#fff',
+  },
+  journalCardTitle: {
+    fontSize: 15,
+    color: COBALT,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: LINE_LIGHT,
+  },
+  entryCardTitle: {
+    fontSize: 15,
+    color: COBALT,
+  },
+  entryCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: LINE_LIGHT,
+  },
+  journalCardScroll: {
+    flex: 1,
+  },
+  journalCardContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 8,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  journalInput: {
+    flex: 1,
+    paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 15,
     lineHeight: 22,
-    minHeight: 200,
-    backgroundColor: '#f9fafb',
     color: '#333',
     textAlignVertical: 'top',
-    marginTop: 8,
   },
   loadingIndicator: {
     marginVertical: 40,

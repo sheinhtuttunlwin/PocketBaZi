@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { loadJournalEntry, saveJournalEntry, getTodayDateKey } from './journal-repo';
-import type { JournalEntry } from './types';
+import { getTodayDateKey, loadJournalEntry, saveJournalEntry } from './journal-repo';
 
 type UseJournalReturn = {
   text: string;

@@ -26,6 +26,7 @@ export default function RootLayout() {
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="profile-setup" options={{ headerShown: false }} />
+          <Stack.Screen name="journal-history" options={{ headerShown: false }} />
           <Stack.Screen name="insight-overview" options={{ headerShown: false }} />
           <Stack.Screen name="insight-patterns" options={{ headerShown: false }} />
           <Stack.Screen name="insight-guidance" options={{ headerShown: false }} />
