@@ -3,9 +3,10 @@ import { ThemedText } from '@/components/themed-text';
 import type { BaziBundle } from '@/src/features/bazi/types';
 import { useBaziBundle } from '@/src/features/bazi/use-bazi-bundle';
 import { profileRepo } from '@/src/features/profile/profile-repo-instance';
+import { useJournal } from '@/src/features/journal/use-journal';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const COBALT = '#1e3a8a';
@@ -211,6 +212,7 @@ function ChartTab({ bundle }: { bundle: BaziBundle }) {
 function JournalTab({ bundle }: { bundle: BaziBundle }) {
   const dayMaster = bundle.chart.dayMaster ?? 'your Day Master';
   const insightSnippet = bundle.dailyInsight?.slice(0, 140) ?? "today's energy";
+  const { text, setText, loading, dateKey } = useJournal();
 
   const prompts = [
     `How can your ${dayMaster} quality guide one decision today?`,
@@ -227,7 +229,10 @@ function JournalTab({ bundle }: { bundle: BaziBundle }) {
         nestedScrollEnabled
       >
         <ThemedText type="subtitle" style={styles.cardTitle}>Journal</ThemedText>
-        <ThemedText style={styles.meta}>Use these prompts to reflect.</ThemedText>
+        <ThemedText style={styles.meta}>Date: {dateKey}</ThemedText>
+
+        {/* Prompts Section */}
+        <ThemedText style={styles.promptsLabel}>Reflection Prompts</ThemedText>
         <View style={styles.divider} />
         {prompts.map((prompt, idx) => (
           <View key={idx} style={styles.promptRow}>
@@ -235,6 +240,23 @@ function JournalTab({ bundle }: { bundle: BaziBundle }) {
             <ThemedText style={styles.promptText}>{prompt}</ThemedText>
           </View>
         ))}
+
+        {/* Journal Entry Section */}
+        <ThemedText style={[styles.promptsLabel, { marginTop: 24 }]}>Your Entry</ThemedText>
+        <View style={styles.divider} />
+        {loading ? (
+          <ActivityIndicator size="large" color={COBALT} style={styles.loadingIndicator} />
+        ) : (
+          <TextInput
+            style={styles.journalInput}
+            placeholder="Write your thoughts here..."
+            placeholderTextColor="#999"
+            multiline
+            value={text}
+            onChangeText={setText}
+            editable={!loading}
+          />
+        )}
       </ScrollView>
     </View>
   );
@@ -474,5 +496,29 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     lineHeight: 22,
+  },
+  promptsLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COBALT,
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  journalInput: {
+    borderWidth: 1.5,
+    borderColor: LINE_LIGHT,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    fontSize: 15,
+    lineHeight: 22,
+    minHeight: 200,
+    backgroundColor: '#f9fafb',
+    color: '#333',
+    textAlignVertical: 'top',
+    marginTop: 8,
+  },
+  loadingIndicator: {
+    marginVertical: 40,
   },
 });
