@@ -139,24 +139,28 @@ export default function DashboardScreen() {
             </View>
 
             <View style={styles.panelArea}>
-              {loading && tab !== 'journal' && (
-                <View style={[styles.contentCardFixed, styles.centered]}>
-                  <ActivityIndicator color={ACCENT} />
-                  <ThemedText style={[styles.placeholder, { marginTop: 12 }]}>Calculating your BaZi...</ThemedText>
-                </View>
-              )}
+              {tab !== 'journal' && (
+                <>
+                  {loading && (
+                    <View style={[styles.contentCardFixed, styles.centered]}>
+                      <ActivityIndicator color={ACCENT} />
+                      <ThemedText style={[styles.placeholder, { marginTop: 12 }]}>Calculating your BaZi...</ThemedText>
+                    </View>
+                  )}
 
-              {!loading && error && (
-                <View style={[styles.contentCardFixed, styles.centered]}>
-                  <ThemedText style={styles.placeholder}>{error}</ThemedText>
-                </View>
-              )}
+                  {!loading && error && (
+                    <View style={[styles.contentCardFixed, styles.centered]}>
+                      <ThemedText style={styles.placeholder}>{error}</ThemedText>
+                    </View>
+                  )}
 
-              {!loading && !error && bundle && (
-                <View style={styles.stack}>
-                  {tab === 'daily' && <DailyInsightTab bundle={bundle} />}
-                  {tab === 'chart' && <ChartTab bundle={bundle} />}
-                </View>
+                  {!loading && !error && bundle && (
+                    <View style={styles.stack}>
+                      {tab === 'daily' && <DailyInsightTab bundle={bundle} />}
+                      {tab === 'chart' && <ChartTab bundle={bundle} />}
+                    </View>
+                  )}
+                </>
               )}
               
               {tab === 'journal' && (
@@ -473,6 +477,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   journalWrapper: {
+    padding: 0,
     width: '100%',
     height: 520,
     overflow: 'hidden',
@@ -555,6 +560,7 @@ const styles = StyleSheet.create({
   },
   journalCard: {
     flex: 1,
+    height: 254,
     borderWidth: 1.5,
     borderColor: LINE_LIGHT,
     borderRadius: 14,
@@ -592,6 +598,7 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
+    minHeight: 180,
     justifyContent: 'center',
     alignItems: 'center',
     gap: 12,
