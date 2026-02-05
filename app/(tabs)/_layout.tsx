@@ -50,7 +50,12 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <FontAwesome5 name="user" size={28} color={color} />,
         }}
       />
-      {/* index tab intentionally omitted from footer */}
+      <Tabs.Screen
+        name="index"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
