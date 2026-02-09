@@ -101,44 +101,44 @@ export function BaziChart({ chartData, birthDate, gender }: BaziChartProps) {
       {/* Four Pillars Grid */}
       <ThemedView style={styles.pillarsContainer}>
         <ThemedView style={styles.pillarLabels}>
-          <ThemedText style={styles.labelText}>Year</ThemedText>
-          <ThemedText style={styles.labelText}>Month</ThemedText>
-          <ThemedText style={styles.labelText}>Day</ThemedText>
           {hasHourData && <ThemedText style={styles.labelText}>Hour</ThemedText>}
+          <ThemedText style={styles.labelText}>Day</ThemedText>
+          <ThemedText style={styles.labelText}>Month</ThemedText>
+          <ThemedText style={styles.labelText}>Year</ThemedText>
         </ThemedView>
         
         <ThemedView style={styles.stemRow}>
-          <ThemedView style={[styles.pillarCell, styles.stemCell]}>
-            <ThemedText style={styles.pillarText}>{yearPillar.heavenly}</ThemedText>
-          </ThemedView>
-          <ThemedView style={[styles.pillarCell, styles.stemCell]}>
-            <ThemedText style={styles.pillarText}>{monthPillar.heavenly}</ThemedText>
-          </ThemedView>
-          <ThemedView style={[styles.pillarCell, styles.stemCell]}>
-            <ThemedText style={styles.pillarText}>{dayPillar.heavenly}</ThemedText>
-          </ThemedView>
           {hasHourData && (
             <ThemedView style={[styles.pillarCell, styles.stemCell]}>
               <ThemedText style={styles.pillarText}>{hourPillar.heavenly}</ThemedText>
             </ThemedView>
           )}
+          <ThemedView style={[styles.pillarCell, styles.stemCell]}>
+            <ThemedText style={styles.pillarText}>{dayPillar.heavenly}</ThemedText>
+          </ThemedView>
+          <ThemedView style={[styles.pillarCell, styles.stemCell]}>
+            <ThemedText style={styles.pillarText}>{monthPillar.heavenly}</ThemedText>
+          </ThemedView>
+          <ThemedView style={[styles.pillarCell, styles.stemCell]}>
+            <ThemedText style={styles.pillarText}>{yearPillar.heavenly}</ThemedText>
+          </ThemedView>
         </ThemedView>
         
         <ThemedView style={styles.branchRow}>
-          <ThemedView style={[styles.pillarCell, styles.branchCell]}>
-            <ThemedText style={styles.pillarText}>{yearPillar.earthly}</ThemedText>
-          </ThemedView>
-          <ThemedView style={[styles.pillarCell, styles.branchCell]}>
-            <ThemedText style={styles.pillarText}>{monthPillar.earthly}</ThemedText>
-          </ThemedView>
-          <ThemedView style={[styles.pillarCell, styles.branchCell]}>
-            <ThemedText style={styles.pillarText}>{dayPillar.earthly}</ThemedText>
-          </ThemedView>
           {hasHourData && (
             <ThemedView style={[styles.pillarCell, styles.branchCell]}>
               <ThemedText style={styles.pillarText}>{hourPillar.earthly}</ThemedText>
             </ThemedView>
           )}
+          <ThemedView style={[styles.pillarCell, styles.branchCell]}>
+            <ThemedText style={styles.pillarText}>{dayPillar.earthly}</ThemedText>
+          </ThemedView>
+          <ThemedView style={[styles.pillarCell, styles.branchCell]}>
+            <ThemedText style={styles.pillarText}>{monthPillar.earthly}</ThemedText>
+          </ThemedView>
+          <ThemedView style={[styles.pillarCell, styles.branchCell]}>
+            <ThemedText style={styles.pillarText}>{yearPillar.earthly}</ThemedText>
+          </ThemedView>
         </ThemedView>
         
         <ThemedView style={styles.rowLabels}>
