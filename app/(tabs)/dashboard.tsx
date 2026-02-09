@@ -2,10 +2,11 @@ import { BaziChart } from '@/components/bazi-chart';
 import { ThemedText } from '@/components/themed-text';
 import type { BaziBundle } from '@/src/features/bazi/types';
 import { useBaziBundle } from '@/src/features/bazi/use-bazi-bundle';
+import { useJournal } from '@/src/features/journal/use-journal';
 import { profileRepo } from '@/src/features/profile/profile-repo-instance';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const COBALT = '#1e3a8a';
@@ -133,28 +134,37 @@ export default function DashboardScreen() {
               </View>
             </View>
 
-            <ThemedText style={styles.subheader}>{todayLabel}</ThemedText>
+            <View style={styles.dateRow}>
+              <ThemedText style={styles.subheader}>{todayLabel}</ThemedText>
+            </View>
 
             <View style={styles.panelArea}>
-              {loading && (
-                <View style={[styles.contentCardFixed, styles.centered]}>
-                  <ActivityIndicator color={ACCENT} />
-                  <ThemedText style={[styles.placeholder, { marginTop: 12 }]}>Calculating your BaZi...</ThemedText>
-                </View>
-              )}
+              {tab !== 'journal' && (
+                <>
+                  {loading && (
+                    <View style={[styles.contentCardFixed, styles.centered]}>
+                      <ActivityIndicator color={ACCENT} />
+                      <ThemedText style={[styles.placeholder, { marginTop: 12 }]}>Calculating your BaZi...</ThemedText>
+                    </View>
+                  )}
 
-              {!loading && error && (
-                <View style={[styles.contentCardFixed, styles.centered]}>
-                  <ThemedText style={styles.placeholder}>{error}</ThemedText>
-                </View>
-              )}
+                  {!loading && error && (
+                    <View style={[styles.contentCardFixed, styles.centered]}>
+                      <ThemedText style={styles.placeholder}>{error}</ThemedText>
+                    </View>
+                  )}
 
-              {!loading && !error && bundle && (
-                <View style={styles.stack}>
-                  {tab === 'daily' && <DailyInsightTab bundle={bundle} />}
-                  {tab === 'chart' && <ChartTab bundle={bundle} />}
-                  {tab === 'journal' && <JournalTab bundle={bundle} />}
-                </View>
+                  {!loading && !error && bundle && (
+                    <View style={styles.stack}>
+                      {tab === 'daily' && <DailyInsightTab bundle={bundle} />}
+                      {tab === 'chart' && <ChartTab bundle={bundle} />}
+                    </View>
+                  )}
+                </>
+              )}
+              
+              {tab === 'journal' && (
+                <JournalTab bundle={bundle} isLoadingBazi={loading} />
               )}
             </View>
           </>
@@ -208,9 +218,11 @@ function ChartTab({ bundle }: { bundle: BaziBundle }) {
   );
 }
 
-function JournalTab({ bundle }: { bundle: BaziBundle }) {
-  const dayMaster = bundle.chart.dayMaster ?? 'your Day Master';
-  const insightSnippet = bundle.dailyInsight?.slice(0, 140) ?? "today's energy";
+function JournalTab({ bundle, isLoadingBazi = false }: { bundle: BaziBundle | null; isLoadingBazi?: boolean }) {
+  const router = useRouter();
+  const dayMaster = bundle?.chart.dayMaster ?? 'your Day Master';
+  const insightSnippet = bundle?.dailyInsight?.slice(0, 140) ?? "today's energy";
+  const { text, setText, loading: journalLoading, dateKey } = useJournal();
 
   const prompts = [
     `How can your ${dayMaster} quality guide one decision today?`,
@@ -219,23 +231,61 @@ function JournalTab({ bundle }: { bundle: BaziBundle }) {
   ];
 
   return (
-    <View style={styles.contentCardFixed}>
-      <ScrollView
-        style={styles.cardScroll}
-        contentContainerStyle={styles.cardScrollContent}
-        showsVerticalScrollIndicator
-        nestedScrollEnabled
-      >
-        <ThemedText type="subtitle" style={styles.cardTitle}>Journal</ThemedText>
-        <ThemedText style={styles.meta}>Use these prompts to reflect.</ThemedText>
-        <View style={styles.divider} />
-        {prompts.map((prompt, idx) => (
-          <View key={idx} style={styles.promptRow}>
-            <ThemedText style={styles.promptBullet}>•</ThemedText>
-            <ThemedText style={styles.promptText}>{prompt}</ThemedText>
+    <View style={styles.journalWrapper}>
+      <View style={styles.journalContainer}>
+        {/* Reflection Prompts Card */}
+        <View style={styles.journalCard}>
+          <ThemedText type="defaultSemiBold" style={styles.journalCardTitle}>Reflection Prompts</ThemedText>
+          {isLoadingBazi ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={COBALT} />
+              <ThemedText style={styles.loadingIndicatorText}>Calculating your BaZi...</ThemedText>
+            </View>
+          ) : (
+            <ScrollView
+              style={styles.journalCardScroll}
+              contentContainerStyle={styles.journalCardContent}
+              showsVerticalScrollIndicator
+              nestedScrollEnabled
+            >
+              {prompts.map((prompt, idx) => (
+                <View key={idx} style={styles.promptRow}>
+                  <ThemedText style={styles.promptBullet}>•</ThemedText>
+                  <ThemedText style={styles.promptText}>{prompt}</ThemedText>
+                </View>
+              ))}
+            </ScrollView>
+          )}
+        </View>
+
+        {/* Journal Entry Card */}
+        <View style={styles.journalCard}>
+          <View style={styles.entryCardHeader}>
+            <ThemedText type="defaultSemiBold" style={styles.entryCardTitle}>Your Entry</ThemedText>
+            <TouchableOpacity
+              onPress={() => router.push('/journal-history')}
+              style={styles.historyLink}
+            >
+              <ThemedText style={styles.historyLinkText}>History</ThemedText>
+            </TouchableOpacity>
           </View>
-        ))}
-      </ScrollView>
+          {journalLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={COBALT} />
+            </View>
+          ) : (
+            <TextInput
+              style={styles.journalInput}
+              placeholder="Write your thoughts here..."
+              placeholderTextColor="#999"
+              multiline
+              value={text}
+              onChangeText={setText}
+              editable={!journalLoading}
+            />
+          )}
+        </View>
+      </View>
     </View>
   );
 }
@@ -400,10 +450,15 @@ const styles = StyleSheet.create({
   placeholder: {
     opacity: 0.7,
   },
+  dateRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: -4,
+  },
   subheader: {
     color: LINE_LIGHT,
     fontWeight: '700',
-    marginBottom: -4,
   },
   contentCard: {
     borderWidth: 1.5,
@@ -416,6 +471,12 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: LINE_LIGHT,
     borderRadius: 14,
+    padding: 0,
+    width: '100%',
+    height: 520,
+    overflow: 'hidden',
+  },
+  journalWrapper: {
     padding: 0,
     width: '100%',
     height: 520,
@@ -474,5 +535,88 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     lineHeight: 22,
+  },
+  promptsLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COBALT,
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  historyLink: {
+    paddingVertical: 3,
+    paddingHorizontal: 10,
+    backgroundColor: LINE_LIGHT,
+    borderRadius: 6,
+  },
+  historyLinkText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: COBALT,
+  },
+  journalContainer: {
+    flex: 1,
+    gap: 12,
+  },
+  journalCard: {
+    flex: 1,
+    height: 254,
+    borderWidth: 1.5,
+    borderColor: LINE_LIGHT,
+    borderRadius: 14,
+    overflow: 'hidden',
+    backgroundColor: '#fff',
+  },
+  journalCardTitle: {
+    fontSize: 15,
+    color: COBALT,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: LINE_LIGHT,
+  },
+  entryCardTitle: {
+    fontSize: 15,
+    color: COBALT,
+  },
+  entryCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: LINE_LIGHT,
+  },
+  journalCardScroll: {
+    flex: 1,
+  },
+  journalCardContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 8,
+  },
+  loadingContainer: {
+    flex: 1,
+    minHeight: 180,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 12,
+  },
+  loadingIndicatorText: {
+    color: '#666',
+    fontSize: 14,
+  },
+  journalInput: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 15,
+    lineHeight: 22,
+    color: '#333',
+    textAlignVertical: 'top',
+  },
+  loadingIndicator: {
+    marginVertical: 40,
   },
 });
