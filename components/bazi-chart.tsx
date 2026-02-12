@@ -1,7 +1,7 @@
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import type { Gender as BaziGender, BaziChart as NormalizedChart } from '@/src/features/bazi/types';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, useWindowDimensions } from 'react-native';
 import { ThemedText } from './themed-text';
 import { ThemedView } from './themed-view';
 
@@ -21,12 +21,27 @@ interface BaziChartProps {
 }
 
 export function BaziChart({ chartData, birthDate, gender }: BaziChartProps) {
+  const { width: screenWidth } = useWindowDimensions();
   const colorScheme = useColorScheme();
-  
+  const isDark = colorScheme === 'dark';
+  const theme = isDark ? Colors.dark : Colors.light;
+
+  // Unified GRID with fixed sizing so both pages match
+  const GRID = {
+    PAD: 10,
+    GAP_X: 6,
+    GAP_Y: 4,
+    LABEL_W: 40,
+    CELL_MIN: 48,
+    CELL_MAX: 60,
+    SECTION_GAP: 10,
+    HEADER_GAP: 6,
+  };
+
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
-      month: 'long',
+      month: 'short',
       day: 'numeric'
     });
   };
@@ -77,80 +92,133 @@ export function BaziChart({ chartData, birthDate, gender }: BaziChartProps) {
 
   const dayMasterValue = (chartData as any)?.dayMaster;
 
+  const columnLabels = hasHourData ? ['Hour', 'Day', 'Month', 'Year'] : ['Day', 'Month', 'Year'];
+  const stemValues = hasHourData
+    ? [hourPillar.heavenly, dayPillar.heavenly, monthPillar.heavenly, yearPillar.heavenly]
+    : [dayPillar.heavenly, monthPillar.heavenly, yearPillar.heavenly];
+  const branchValues = hasHourData
+    ? [hourPillar.earthly, dayPillar.earthly, monthPillar.earthly, yearPillar.earthly]
+    : [dayPillar.earthly, monthPillar.earthly, yearPillar.earthly];
+
+  const columnCount = columnLabels.length;
+  const gridTotalGaps = GRID.GAP_X * (columnCount - 1);
+  const availableWidth = screenWidth - GRID.PAD * 2 - gridTotalGaps;
+  const rawCellSize = availableWidth / columnCount;
+  const cellSize = Math.floor(Math.min(GRID.CELL_MAX, Math.max(GRID.CELL_MIN, rawCellSize)));
+
+  // Create dynamic styles based on GRID
+  const dynamicStyles = {
+    containerPadding: GRID.PAD,
+    sectionMargin: GRID.SECTION_GAP,
+    headerGap: GRID.HEADER_GAP,
+  };
+
   return (
-    <ThemedView style={[
-      styles.container,
-      {
-        backgroundColor:
-          Colors[colorScheme ?? 'light'].background === '#fff'
-            ? 'rgba(245,246,250,0.85)'
-            : 'rgba(30,32,36,0.85)',
-      },
-    ]}>
-      <ThemedText type="defaultSemiBold" style={styles.title}>🏛️ Four Pillars Chart</ThemedText>
+    <ThemedView style={[styles.container, { padding: dynamicStyles.containerPadding }]}>
+      <ThemedText style={styles.title}>Four Pillars Chart</ThemedText>
       
-      {/* Birth Information */}
-      <ThemedView style={styles.birthInfo}>
-        <ThemedText style={styles.birthText}>📅 {formatDate(birthDate)}</ThemedText>
-        <ThemedText style={styles.birthText}>🕐 {formatTime(birthDate)}</ThemedText>
-        <ThemedText style={styles.birthText}>
-          {gender === 'male' ? '♂' : gender === 'female' ? '♀' : '•'} {gender.charAt(0).toUpperCase() + gender.slice(1)}
-        </ThemedText>
+      {/* Birth Information Card */}
+      <ThemedView style={[styles.birthInfoCard, { marginBottom: dynamicStyles.sectionMargin }]}>
+        <ThemedView style={styles.birthInfoRow}>
+          <ThemedView style={styles.birthInfoItem}>
+            <ThemedText style={styles.birthInfoLabel}>Date</ThemedText>
+            <ThemedText style={styles.birthInfoValue}>{formatDate(birthDate)}</ThemedText>
+          </ThemedView>
+          <ThemedView style={styles.birthDivider} />
+          <ThemedView style={styles.birthInfoItem}>
+            <ThemedText style={styles.birthInfoLabel}>Time</ThemedText>
+            <ThemedText style={styles.birthInfoValue}>{formatTime(birthDate)}</ThemedText>
+          </ThemedView>
+          <ThemedView style={styles.birthDivider} />
+          <ThemedView style={styles.birthInfoItem}>
+            <ThemedText style={styles.birthInfoLabel}>Gender</ThemedText>
+            <ThemedText style={styles.birthInfoValue}>
+              {gender === 'male' ? '♂ Male' : gender === 'female' ? '♀ Female' : gender.charAt(0).toUpperCase() + gender.slice(1)}
+            </ThemedText>
+          </ThemedView>
+        </ThemedView>
       </ThemedView>
 
       {/* Four Pillars Grid */}
-      <ThemedView style={styles.pillarsContainer}>
-        <ThemedView style={styles.pillarLabels}>
-          {hasHourData && <ThemedText style={styles.labelText}>Hour</ThemedText>}
-          <ThemedText style={styles.labelText}>Day</ThemedText>
-          <ThemedText style={styles.labelText}>Month</ThemedText>
-          <ThemedText style={styles.labelText}>Year</ThemedText>
+      <ThemedView style={[styles.pillarsCard, { marginBottom: dynamicStyles.sectionMargin }]}>
+        {/* Row 1: Column Headers */}
+        <ThemedView style={styles.gridRow}>
+          {columnLabels.map((label, index) => (
+            <ThemedText
+              key={label}
+              style={[
+                styles.columnHeaderText,
+                {
+                  width: cellSize,
+                  marginRight: index !== columnLabels.length - 1 ? GRID.GAP_X : 0,
+                },
+              ]}
+            >
+              {label}
+            </ThemedText>
+          ))}
         </ThemedView>
         
-        <ThemedView style={styles.stemRow}>
-          {hasHourData && (
-            <ThemedView style={[styles.pillarCell, styles.stemCell]}>
-              <ThemedText style={styles.pillarText}>{hourPillar.heavenly}</ThemedText>
+        {/* Row 2: Heavenly Stems */}
+        <ThemedView style={[styles.gridRow, { marginBottom: GRID.GAP_Y }]}>
+          {stemValues.map((value, index) => (
+            <ThemedView
+              key={`stem-${index}`}
+              style={[
+                styles.pillarCell,
+                styles.stemCell,
+                {
+                  width: cellSize,
+                  height: cellSize,
+                  marginRight: index !== stemValues.length - 1 ? GRID.GAP_X : 0,
+                },
+              ]}
+            >
+              <ThemedText style={[styles.pillarText, { fontSize: Math.round(cellSize * 0.5) }]}>{value}</ThemedText>
             </ThemedView>
-          )}
-          <ThemedView style={[styles.pillarCell, styles.stemCell]}>
-            <ThemedText style={styles.pillarText}>{dayPillar.heavenly}</ThemedText>
-          </ThemedView>
-          <ThemedView style={[styles.pillarCell, styles.stemCell]}>
-            <ThemedText style={styles.pillarText}>{monthPillar.heavenly}</ThemedText>
-          </ThemedView>
-          <ThemedView style={[styles.pillarCell, styles.stemCell]}>
-            <ThemedText style={styles.pillarText}>{yearPillar.heavenly}</ThemedText>
-          </ThemedView>
+          ))}
         </ThemedView>
         
-        <ThemedView style={styles.branchRow}>
-          {hasHourData && (
-            <ThemedView style={[styles.pillarCell, styles.branchCell]}>
-              <ThemedText style={styles.pillarText}>{hourPillar.earthly}</ThemedText>
+        {/* Row 3: Earthly Branches */}
+        <ThemedView style={styles.gridRow}>
+          {branchValues.map((value, index) => (
+            <ThemedView
+              key={`branch-${index}`}
+              style={[
+                styles.pillarCell,
+                styles.branchCell,
+                {
+                  width: cellSize,
+                  height: cellSize,
+                  marginRight: index !== branchValues.length - 1 ? GRID.GAP_X : 0,
+                },
+              ]}
+            >
+              <ThemedText style={[styles.pillarText, { fontSize: Math.round(cellSize * 0.5) }]}>{value}</ThemedText>
             </ThemedView>
-          )}
-          <ThemedView style={[styles.pillarCell, styles.branchCell]}>
-            <ThemedText style={styles.pillarText}>{dayPillar.earthly}</ThemedText>
-          </ThemedView>
-          <ThemedView style={[styles.pillarCell, styles.branchCell]}>
-            <ThemedText style={styles.pillarText}>{monthPillar.earthly}</ThemedText>
-          </ThemedView>
-          <ThemedView style={[styles.pillarCell, styles.branchCell]}>
-            <ThemedText style={styles.pillarText}>{yearPillar.earthly}</ThemedText>
-          </ThemedView>
+          ))}
         </ThemedView>
-        
-        <ThemedView style={styles.rowLabels}>
-          <ThemedText style={styles.rowLabelText}>Heavenly Stems</ThemedText>
-          <ThemedText style={styles.rowLabelText}>Earthly Branches</ThemedText>
+      </ThemedView>
+
+      {/* Legend */}
+      <ThemedView style={[styles.legendContainer, { marginBottom: dynamicStyles.sectionMargin }]}>
+        <ThemedView style={styles.legendItem}>
+          <ThemedView style={[styles.legendColor, styles.stemCell]} />
+          <ThemedText style={styles.legendLabel}>Heavenly Stems</ThemedText>
+        </ThemedView>
+        <ThemedView style={styles.legendItem}>
+          <ThemedView style={[styles.legendColor, styles.branchCell]} />
+          <ThemedText style={styles.legendLabel}>Earthly Branches</ThemedText>
         </ThemedView>
       </ThemedView>
 
       {/* Day Master */}
       {dayMasterValue && (
-        <ThemedView style={styles.dayMasterContainer}>
-          <ThemedText style={styles.dayMasterLabel}>Day Master (Self Element):</ThemedText>
+        <ThemedView style={[styles.dayMasterCard]}>
+          <ThemedView>
+            <ThemedText style={styles.dayMasterLabel}>Day Master</ThemedText>
+            <ThemedText style={styles.dayMasterSubLabel}>(Self Element)</ThemedText>
+          </ThemedView>
           <ThemedText style={styles.dayMasterValue}>{dayMasterValue}</ThemedText>
         </ThemedView>
       )}
@@ -160,111 +228,141 @@ export function BaziChart({ chartData, birthDate, gender }: BaziChartProps) {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.12)',
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 2,
     width: '100%',
   },
   title: {
-    fontSize: 20,
-    marginBottom: 23,
+    fontSize: 24,
+    fontWeight: '700',
     textAlign: 'center',
   },
-  birthInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    backgroundColor: 'rgba(0,0,0,0.04)',
-    borderRadius: 12,
-  },
-  birthText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  pillarsContainer: {
-    marginBottom: 12,
-    borderRadius: 16,
+  birthInfoCard: {
+    borderRadius: 14,
+    paddingHorizontal: 0,
     overflow: 'hidden',
-    paddingVertical: 12,
-    paddingHorizontal: 12,
+    backgroundColor: 'rgba(0,0,0,0.03)',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.06)',
   },
-  pillarLabels: {
+  birthInfoRow: {
     flexDirection: 'row',
-    marginBottom: 8,
+    justifyContent: 'space-around',
+    paddingVertical: 10,
+    paddingHorizontal: 8,
   },
-  labelText: {
+  birthInfoItem: {
+    alignItems: 'center',
     flex: 1,
-    textAlign: 'center',
-    fontSize: 14,
+    gap: 2,
+  },
+  birthInfoLabel: {
+    fontSize: 9,
+    fontWeight: '500',
+    color: '#999',
+    textTransform: 'uppercase',
+    letterSpacing: 0.2,
+  },
+  birthInfoValue: {
+    fontSize: 11,
     fontWeight: '600',
-    color: '#666',
   },
-  stemRow: {
-    flexDirection: 'row',
-    marginBottom: 2,
+  birthDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: 'rgba(0,0,0,0.08)',
+    marginHorizontal: 6,
   },
-  branchRow: {
+  pillarsCard: {
+    borderRadius: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    backgroundColor: 'rgba(0,0,0,0.02)',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.06)',
+    alignItems: 'center',
+  },
+  gridRow: {
     flexDirection: 'row',
-    marginBottom: 8,
+    alignSelf: 'center',
+  },
+  columnHeaderText: {
+    textAlign: 'center',
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#888',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
   },
   pillarCell: {
-    flex: 1,
-    padding: 12,
-    margin: 1,
-    borderRadius: 8,
     alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 2,
   },
   stemCell: {
-    backgroundColor: 'rgba(255,99,71,0.18)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,99,71,0.35)',
+    backgroundColor: '#FFD699',
+    borderWidth: 2,
+    borderColor: '#FFB74D',
   },
   branchCell: {
-    backgroundColor: 'rgba(30,144,255,0.18)',
-    borderWidth: 1,
-    borderColor: 'rgba(30,144,255,0.35)',
+    backgroundColor: '#B8D4FF',
+    borderWidth: 2,
+    borderColor: '#6BA3E5',
   },
   pillarText: {
-    fontSize: 18,
     fontWeight: '700',
   },
-  rowLabels: {
+  legendContainer: {
     flexDirection: 'row',
-  },
-  rowLabelText: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: 13,
-    color: '#667',
-    fontStyle: 'italic',
-  },
-  dayMasterContainer: {
-    flexDirection: 'row',
+    gap: 10,
     justifyContent: 'center',
+  },
+  legendItem: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10, 
-    paddingHorizontal: 16, 
-    borderRadius: 12,  
-    backgroundColor: 'rgba(0,0,0,0.04)', 
-    gap: 6,  
+    gap: 6,
+  },
+  legendColor: {
+    width: 12,
+    height: 12,
+    borderRadius: 3,
+  },
+  legendLabel: {
+    fontSize: 10,
+    fontWeight: '500',
+    color: '#888',
+  },
+  dayMasterCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderRadius: 14,
+    backgroundColor: 'rgba(0,0,0,0.02)',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.06)',
+    gap: 8,
   },
   dayMasterLabel: {
-    fontSize: 14,
-    fontWeight: '500', 
-    lineHeight: 20,
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#888',
+    textTransform: 'uppercase',
+    letterSpacing: 0.2,
+  },
+  dayMasterSubLabel: {
+    fontSize: 9,
+    fontWeight: '400',
+    color: '#BBB',
+    marginTop: 1,
   },
   dayMasterValue: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: '700',
-    color: '#005BBB',
-    lineHeight: 20, 
+    color: '#FFB74D',
   },
 });
