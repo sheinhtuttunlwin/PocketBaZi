@@ -52,6 +52,7 @@ export default function InsightOverviewScreen() {
                 chartData={bundle.chart}
                 birthDate={bundle.input.birthDate}
                 gender={bundle.input.gender}
+                sizeVariant="large"
               />
             </View>
 

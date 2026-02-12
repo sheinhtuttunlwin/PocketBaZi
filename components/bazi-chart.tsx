@@ -18,25 +18,36 @@ interface BaziChartProps {
   chartData: NormalizedChart | LegacyChartShape;
   birthDate: Date;
   gender: BaziGender;
+  sizeVariant?: 'compact' | 'large';
 }
 
-export function BaziChart({ chartData, birthDate, gender }: BaziChartProps) {
+export function BaziChart({ chartData, birthDate, gender, sizeVariant = 'compact' }: BaziChartProps) {
   const { width: screenWidth } = useWindowDimensions();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const theme = isDark ? Colors.dark : Colors.light;
 
-  // Unified GRID with fixed sizing so both pages match
-  const GRID = {
-    PAD: 10,
-    GAP_X: 6,
-    GAP_Y: 4,
-    LABEL_W: 40,
-    CELL_MIN: 48,
-    CELL_MAX: 60,
-    SECTION_GAP: 10,
-    HEADER_GAP: 6,
-  };
+  const GRID = sizeVariant === 'large'
+    ? {
+        PAD: 12,
+        GAP_X: 8,
+        GAP_Y: 6,
+        LABEL_W: 40,
+        CELL_MIN: 56,
+        CELL_MAX: 70,
+        SECTION_GAP: 12,
+        HEADER_GAP: 8,
+      }
+    : {
+        PAD: 10,
+        GAP_X: 6,
+        GAP_Y: 4,
+        LABEL_W: 40,
+        CELL_MIN: 48,
+        CELL_MAX: 60,
+        SECTION_GAP: 10,
+        HEADER_GAP: 6,
+      };
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', {
@@ -174,7 +185,17 @@ export function BaziChart({ chartData, birthDate, gender }: BaziChartProps) {
                 },
               ]}
             >
-              <ThemedText style={[styles.pillarText, { fontSize: Math.round(cellSize * 0.5) }]}>{value}</ThemedText>
+              <ThemedText
+                style={[
+                  styles.pillarText,
+                  {
+                    fontSize: Math.round(cellSize * 0.5),
+                    lineHeight: Math.round(cellSize * 0.5) + 4,
+                  },
+                ]}
+              >
+                {value}
+              </ThemedText>
             </ThemedView>
           ))}
         </ThemedView>
@@ -194,7 +215,17 @@ export function BaziChart({ chartData, birthDate, gender }: BaziChartProps) {
                 },
               ]}
             >
-              <ThemedText style={[styles.pillarText, { fontSize: Math.round(cellSize * 0.5) }]}>{value}</ThemedText>
+              <ThemedText
+                style={[
+                  styles.pillarText,
+                  {
+                    fontSize: Math.round(cellSize * 0.5),
+                    lineHeight: Math.round(cellSize * 0.5) + 4,
+                  },
+                ]}
+              >
+                {value}
+              </ThemedText>
             </ThemedView>
           ))}
         </ThemedView>
@@ -214,8 +245,8 @@ export function BaziChart({ chartData, birthDate, gender }: BaziChartProps) {
 
       {/* Day Master */}
       {dayMasterValue && (
-        <ThemedView style={[styles.dayMasterCard]}>
-          <ThemedView>
+        <ThemedView style={styles.dayMasterCard}>
+          <ThemedView style={styles.dayMasterTextBlock}>
             <ThemedText style={styles.dayMasterLabel}>Day Master</ThemedText>
             <ThemedText style={styles.dayMasterSubLabel}>(Self Element)</ThemedText>
           </ThemedView>
@@ -276,13 +307,12 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 8,
     backgroundColor: 'rgba(0,0,0,0.02)',
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.06)',
     alignItems: 'center',
   },
   gridRow: {
     flexDirection: 'row',
     alignSelf: 'center',
+    backgroundColor: 'transparent',
   },
   columnHeaderText: {
     textAlign: 'center',
@@ -314,6 +344,8 @@ const styles = StyleSheet.create({
   },
   pillarText: {
     fontWeight: '700',
+    includeFontPadding: false,
+    textAlignVertical: 'center',
   },
   legendContainer: {
     flexDirection: 'row',
@@ -343,9 +375,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     borderRadius: 14,
     backgroundColor: 'rgba(0,0,0,0.02)',
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.06)',
     gap: 8,
+  },
+  dayMasterTextBlock: {
+    backgroundColor: 'transparent',
   },
   dayMasterLabel: {
     fontSize: 11,
